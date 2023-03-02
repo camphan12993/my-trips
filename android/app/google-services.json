@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "354134269841",
+    "project_id": "our-trips-a2d83",
+    "storage_bucket": "our-trips-a2d83.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:354134269841:android:a68da9390c9be4bf9e4430",
+        "android_client_info": {
+          "package_name": "com.example.my_trips_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "354134269841-tikjrri4cio6fiflrpd7pufcrtr6g9tv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCet4j3PeJgF7UedAGGSbQI5iJ6b-DAles"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "354134269841-tikjrri4cio6fiflrpd7pufcrtr6g9tv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
