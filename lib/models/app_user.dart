@@ -28,7 +28,7 @@ class AppUser {
       uid: map['uid'] ?? '',
       name: map['name'] ?? '',
       email: map['email'] ?? '',
-      tripIds: List<String>.from(map['tripIds']),
+      tripIds: map['tripIds'] != null ? List<String>.from(map['tripIds']) : [],
     );
   }
 
