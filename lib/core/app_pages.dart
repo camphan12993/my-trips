@@ -41,5 +41,14 @@ class AppPages {
         },
       ),
     ),
+    GetPage(
+      name: AppRoutes.createTrip,
+      page: () => const CreateTrip(),
+      binding: BindingsBuilder(
+        () {
+          Get.lazyPut(() => CreateTripController());
+        },
+      ),
+    ),
   ];
 }

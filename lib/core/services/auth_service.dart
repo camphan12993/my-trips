@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:my_trips_app/core/services/database_service.dart';
+import 'package:my_trips_app/core/services/user_service.dart';
 import 'package:my_trips_app/models/user_payload.dart';
 
 class AuthService {
@@ -19,7 +19,7 @@ class AuthService {
       user = userCredential.user;
       await user!.updateDisplayName(name);
       await user.reload();
-      await DatabaseService(uid: user.uid).saveUser(
+      await DatabaseService().saveUser(
         UserPayload(
           name: name,
           email: email,
