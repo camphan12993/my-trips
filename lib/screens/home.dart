@@ -14,6 +14,7 @@ class Home extends GetView<HomeController> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Home'),
+            ElevatedButton(onPressed: () {}, child: Text('Create new trip')),
             ElevatedButton(
               onPressed: controller.signout,
               child: Text('Sign out'),

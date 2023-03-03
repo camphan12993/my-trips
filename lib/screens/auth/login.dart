@@ -89,7 +89,7 @@ class Login extends GetView<LoginController> {
                 alignment: Alignment.center,
                 child: GestureDetector(
                   onTap: () {
-                    Get.toNamed(AppRoutes.register);
+                    Get.offNamed(AppRoutes.register);
                   },
                   child: const Text('Create Account'),
                 ),

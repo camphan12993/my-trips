@@ -1,4 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:my_trips_app/core/services/database_service.dart';
+import 'package:my_trips_app/models/user_payload.dart';
 
 class AuthService {
   Future<User?> createAccount({
@@ -17,6 +19,13 @@ class AuthService {
       user = userCredential.user;
       await user!.updateDisplayName(name);
       await user.reload();
+      await DatabaseService(uid: user.uid).saveUser(
+        UserPayload(
+          name: name,
+          email: email,
+          uid: user.uid,
+        ),
+      );
       user = auth.currentUser;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {

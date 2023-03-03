@@ -106,7 +106,7 @@ class Register extends GetView<RegisterController> {
                 alignment: Alignment.center,
                 child: GestureDetector(
                   onTap: () {
-                    Get.toNamed(AppRoutes.register);
+                    Get.offNamed(AppRoutes.login);
                   },
                   child: const Text('Login?'),
                 ),
