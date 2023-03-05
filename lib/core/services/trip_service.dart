@@ -21,4 +21,17 @@ class TripService {
     });
     return trips;
   }
+
+  Future<Trip?> getTripById({required String id}) async {
+    Trip? trip;
+    final CollectionReference tripCollection = FirebaseFirestore.instance.collection('trips');
+    DocumentSnapshot<Object?> result = await tripCollection.doc(id).get();
+    trip = Trip.fromMap(result.data() as Map<String, dynamic>);
+    return trip;
+  }
+
+  Future<void> updateTrip({required String id, required Map<String, dynamic> payload}) async {
+    final CollectionReference tripCollection = FirebaseFirestore.instance.collection('trips');
+    return await tripCollection.doc(id).update(payload);
+  }
 }

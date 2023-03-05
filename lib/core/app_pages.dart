@@ -50,5 +50,23 @@ class AppPages {
         },
       ),
     ),
+    GetPage(
+      name: AppRoutes.tripDetail,
+      page: () => const TripDetail(),
+      binding: BindingsBuilder(
+        () {
+          Get.lazyPut(() => TripDetailController());
+        },
+      ),
+    ),
+    GetPage(
+      name: AppRoutes.tripSettings,
+      page: () => const TripSettings(),
+      binding: BindingsBuilder(
+        () {
+          Get.lazyPut(() => TripSettingController());
+        },
+      ),
+    ),
   ];
 }

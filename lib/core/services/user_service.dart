@@ -17,4 +17,14 @@ class UserService {
     DocumentSnapshot result = await userCollection.doc(id).get();
     return AppUser.fromMap(result.data() as Map<String, dynamic>);
   }
+
+  Future<List<AppUser>> getListUser() async {
+    List<AppUser> users = [];
+    final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
+    QuerySnapshot result = await userCollection.get();
+    result.docs.forEach((e) {
+      users.add(AppUser.fromMap(e.data()! as Map<String, dynamic>));
+    });
+    return users;
+  }
 }

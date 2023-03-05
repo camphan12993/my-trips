@@ -29,6 +29,11 @@ class Home extends GetView<HomeController> {
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Card(
                         child: ListTile(
+                          onTap: () {
+                            Get.toNamed(
+                              '${AppRoutes.trips}/${e.id}',
+                            );
+                          },
                           title: Text(
                             e.name,
                           ),
