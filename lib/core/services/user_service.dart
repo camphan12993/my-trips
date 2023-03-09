@@ -10,6 +10,11 @@ class UserService {
     return await userCollection.doc(user.uid).set(user.toMap());
   }
 
+  Future<void> updateUser({required String id, required Map<String, dynamic> payload}) async {
+    final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
+    return await userCollection.doc(id).update(payload);
+  }
+
   Future<AppUser> getUserById(
     String id,
   ) async {
@@ -22,9 +27,9 @@ class UserService {
     List<AppUser> users = [];
     final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
     QuerySnapshot result = await userCollection.get();
-    result.docs.forEach((e) {
+    for (var e in result.docs) {
       users.add(AppUser.fromMap(e.data()! as Map<String, dynamic>));
-    });
+    }
     return users;
   }
 }

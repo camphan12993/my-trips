@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_trips_app/controllers/index.dart';
 
-class SplashScreen extends GetView<SplashController> {
+class SplashScreen extends GetView<AuthController> {
   const SplashScreen({super.key});
 
   @override

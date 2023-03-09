@@ -13,6 +13,19 @@ class AuthController extends GetxController {
   AppUser? user;
   final AuthService _authService = AuthService();
   final UserService _userService = UserService();
+  final List<AppUser> users = [];
+
+  RxBool isLoading = RxBool(false);
+
+  @override
+  Future<void> onInit() async {
+    super.onInit();
+    isLoading.value = true;
+    await initFirebase();
+    await getUserList();
+    isLoading.value = false;
+  }
+
   Future<void> doLogin(String email, String password) async {
     EasyLoading.show(maskType: EasyLoadingMaskType.black);
     user = await _authService.signInUsingEmailPassword(email: email, password: password);
@@ -20,6 +33,16 @@ class AuthController extends GetxController {
     if (user != null) {
       Get.offAndToNamed(AppRoutes.home);
     }
+  }
+
+  AppUser? getUserById(String id) {
+    return users.firstWhere((e) => e.uid == id);
+  }
+
+  Future<void> getUserList() async {
+    var result = await _userService.getListUser();
+    users.clear();
+    users.addAll(result);
   }
 
   Future<void> initFirebase() async {

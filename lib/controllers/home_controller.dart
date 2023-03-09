@@ -7,8 +7,8 @@ import 'package:my_trips_app/models/trip.dart';
 
 class HomeController extends GetxController {
   AuthService authService = AuthService();
-  TripService _tripService = TripService();
-  AuthController _authController = Get.find();
+  final TripService _tripService = TripService();
+  final AuthController _authController = Get.find();
   RxList<Trip> trips = RxList([]);
   Future<void> signout() async {
     await authService.signOut();

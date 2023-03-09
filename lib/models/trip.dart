@@ -4,11 +4,13 @@ class Trip {
   final String id;
   final String name;
   final String adminId;
+  final String startDate;
   final List<String> memberIds;
   Trip({
     required this.id,
     required this.name,
     required this.adminId,
+    required this.startDate,
     required this.memberIds,
   });
 
@@ -18,6 +20,7 @@ class Trip {
     result.addAll({'id': id});
     result.addAll({'name': name});
     result.addAll({'adminId': adminId});
+    result.addAll({'startDate': startDate});
     result.addAll({'memberIds': memberIds});
 
     return result;
@@ -28,6 +31,7 @@ class Trip {
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       adminId: map['adminId'] ?? '',
+      startDate: map['startDate'] ?? '',
       memberIds: map['memberIds'] != null ? List<String>.from(map['memberIds']) : [],
     );
   }

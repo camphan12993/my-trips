@@ -8,11 +8,6 @@ class AppPages {
     GetPage(
       name: AppRoutes.initial,
       page: () => const SplashScreen(),
-      binding: BindingsBuilder(
-        () {
-          Get.lazyPut(() => SplashController());
-        },
-      ),
     ),
     GetPage(
       name: AppRoutes.home,
@@ -20,6 +15,15 @@ class AppPages {
       binding: BindingsBuilder(
         () {
           Get.lazyPut(() => HomeController());
+        },
+      ),
+    ),
+    GetPage(
+      name: AppRoutes.userProfile,
+      page: () => const UserProfile(),
+      binding: BindingsBuilder(
+        () {
+          Get.lazyPut(() => UserProfileController());
         },
       ),
     ),
@@ -61,10 +65,10 @@ class AppPages {
     ),
     GetPage(
       name: AppRoutes.tripSettings,
-      page: () => const TripSettings(),
+      page: () => const CreateTrip(),
       binding: BindingsBuilder(
         () {
-          Get.lazyPut(() => TripSettingController());
+          Get.lazyPut(() => CreateTripController());
         },
       ),
     ),

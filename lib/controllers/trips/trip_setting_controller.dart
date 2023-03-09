@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
-import 'package:my_trips_app/controllers/auth/auth_controller.dart';
-import 'package:my_trips_app/core/services/user_service.dart';
 import 'package:my_trips_app/models/app_user.dart';
 
 import '../../core/services/trip_service.dart';
@@ -13,9 +11,10 @@ class TripSettingController extends GetxController {
   final TripDetailController _tripDetailController = Get.find();
   final formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
+  final RxnString selectedUser = RxnString();
   final TripService _tripService = TripService();
-  final UserService _userService = UserService();
-  RxList<AppUser> users = RxList([]);
+  final RxList<AppUser> members = RxList<AppUser>([]);
+  final RxList<AppUser> users = RxList<AppUser>([]);
 
   Trip get trip => _tripDetailController.trip.value!;
 
@@ -23,14 +22,18 @@ class TripSettingController extends GetxController {
   void onInit() {
     super.onInit();
     var trip = _tripDetailController.trip.value;
-    nameController.text = trip!.name;
-    getUserList();
+    users.addAll(_tripDetailController.users);
+    if (trip != null) {
+      members.clear();
+      members.addAll(trip.memberIds.map((id) => users.firstWhere((user) => user.uid == id)).toList());
+      nameController.text = trip.name;
+    }
   }
 
-  Future<void> getUserList() async {
-    var result = await _userService.getListUser();
-    users.clear();
-    users.addAll(result);
+  void addMember(String id) {
+    var user = users.firstWhere((user) => user.uid == id);
+    members.add(user);
+    selectedUser.value = null;
   }
 
   Future<void> updateTrip() async {
@@ -39,9 +42,7 @@ class TripSettingController extends GetxController {
         EasyLoading.show(maskType: EasyLoadingMaskType.black);
         await _tripService.updateTrip(
           id: _tripDetailController.id!,
-          payload: {
-            'name': nameController.text,
-          },
+          payload: {'name': nameController.text, 'memberIds': members.map((e) => e.uid)},
         );
         Get.back();
       } catch (e) {

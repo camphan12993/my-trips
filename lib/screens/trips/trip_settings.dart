@@ -40,44 +40,47 @@ class TripSettings extends GetView<TripSettingController> {
             const SizedBox(
               height: 10,
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 60,
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      onChanged: (String? value) {
-                        // This is called when the user selects an item.
-                      },
-                      items: controller.users.map<DropdownMenuItem<String>>((AppUser value) {
-                        return DropdownMenuItem<String>(
-                          value: value.uid,
-                          child: Text(value.name),
-                        );
-                      }).toList(),
+            Obx(
+              () => Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 60,
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: controller.selectedUser.value,
+                        onChanged: (String? value) {
+                          controller.selectedUser.value = value;
+                        },
+                        items: controller.users.map<DropdownMenuItem<String>>((AppUser value) {
+                          return DropdownMenuItem<String>(
+                            value: value.uid,
+                            child: Text(value.name),
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Icon(
-                    Icons.add,
-                    size: 20,
+                  const SizedBox(
+                    width: 10,
                   ),
-                  style: ElevatedButton.styleFrom(
-                    shape: const CircleBorder(),
-                  ),
-                )
-              ],
+                  ElevatedButton(
+                    onPressed: controller.selectedUser.value != null ? () => controller.addMember(controller.selectedUser.value!) : null,
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                    ),
+                    child: const Icon(
+                      Icons.add,
+                      size: 20,
+                    ),
+                  )
+                ],
+              ),
             ),
             Obx(
-              () => controller.trip.memberIds.isNotEmpty
+              () => controller.members.isNotEmpty
                   ? Column(
-                      children: controller.users
+                      children: controller.members
                           .map((u) => Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 6),
                                 child: Row(
@@ -92,7 +95,11 @@ class TripSettings extends GetView<TripSettingController> {
                                     const SizedBox(
                                       width: 10,
                                     ),
-                                    IconButton(color: Colors.red, onPressed: () {}, icon: const Icon(Icons.delete))
+                                    IconButton(
+                                      color: Colors.red,
+                                      onPressed: () => controller.addMember(u.uid),
+                                      icon: const Icon(Icons.delete),
+                                    )
                                   ],
                                 ),
                               ))

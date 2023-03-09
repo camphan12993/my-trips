@@ -11,7 +11,12 @@ class Home extends GetView<HomeController> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Trips'),
-        actions: [IconButton(onPressed: controller.signout, icon: const Icon(Icons.logout))],
+        actions: [
+          IconButton(
+            onPressed: () => Get.toNamed(AppRoutes.userProfile),
+            icon: const Icon(Icons.person),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Get.toNamed(AppRoutes.createTrip)!.then((value) {
@@ -36,6 +41,11 @@ class Home extends GetView<HomeController> {
                           },
                           title: Text(
                             e.name,
+                          ),
+                          subtitle: Text('${e.memberIds.length} members'),
+                          leading: const Icon(
+                            Icons.people,
+                            size: 30,
                           ),
                         ),
                       ),
