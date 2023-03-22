@@ -58,7 +58,7 @@ class CreateTrip extends GetView<CreateTripController> {
                           lastDate: DateTime(2060),
                         );
                         if (controller.selectedDate.value != null) {
-                          controller.startDateController.text = DateFormat('dd/MM/yyyy').format(controller.selectedDate.value!);
+                          controller.startDateController.text = DateFormat('dd-MM-yyyy').format(controller.selectedDate.value!);
                         }
                       },
                       decoration: const InputDecoration(hintText: 'Select start date', labelText: 'Start Date', suffixIcon: Icon(Icons.calendar_month)),

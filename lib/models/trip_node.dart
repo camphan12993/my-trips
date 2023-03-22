@@ -6,13 +6,13 @@ class TripNode {
   final String id;
   final String tripId;
   final String name;
-  final String createdDate;
+  final String date;
   List<TripExpense> expenses;
   TripNode({
     required this.id,
     required this.tripId,
     required this.name,
-    required this.createdDate,
+    required this.date,
     required this.expenses,
   });
 
@@ -22,7 +22,7 @@ class TripNode {
     result.addAll({'id': id});
     result.addAll({'tripId': tripId});
     result.addAll({'name': name});
-    result.addAll({'createdDate': createdDate});
+    result.addAll({'date': date});
     result.addAll({'expenses': expenses.map((x) => x.toMap()).toList()});
 
     return result;
@@ -33,8 +33,8 @@ class TripNode {
       id: map['id'] ?? '',
       tripId: map['tripId'] ?? '',
       name: map['name'] ?? '',
-      createdDate: map['createdDate'] ?? '',
-      expenses: map['expenses'] != null ? List<TripExpense>.from(map['expenses']?.map((x) => TripExpense.fromMap(x))) : [],
+      date: map['date'] ?? '',
+      expenses: map['expenses'] != null ? List<TripExpense>.from(map['expenses'].map((x) => TripExpense.fromMap(x))) : [],
     );
   }
 

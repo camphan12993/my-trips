@@ -56,7 +56,7 @@ class AppPages {
     ),
     GetPage(
       name: AppRoutes.tripDetail,
-      page: () => const TripDetail(),
+      page: () => TripDetail(),
       binding: BindingsBuilder(
         () {
           Get.lazyPut(() => TripDetailController());

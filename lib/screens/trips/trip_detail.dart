@@ -6,8 +6,11 @@ import 'package:my_trips_app/core/app_routes.dart';
 import 'package:my_trips_app/dialogs/add_spend_dialog.dart';
 import 'package:intl/intl.dart';
 
+import '../../widgets/data_placeholder.dart';
+
 class TripDetail extends GetView<TripDetailController> {
-  const TripDetail({super.key});
+  final formatCurrency = NumberFormat.simpleCurrency(locale: 'vi-VN', name: 'VND', decimalDigits: 0);
+  TripDetail({super.key});
 
   Widget buildExpenseDetailForMember(String id) {
     var userExpense = controller.getTotalOfMember(id);
@@ -21,7 +24,7 @@ class TripDetail extends GetView<TripDetailController> {
             children: [
               UserAvatar(uid: id),
               Text(
-                userExpense.toString(),
+                formatCurrency.format(userExpense),
               ),
             ],
           ),
@@ -31,9 +34,9 @@ class TripDetail extends GetView<TripDetailController> {
           Align(
             alignment: Alignment.centerRight,
             child: Text(
-              '(${diff > 0 ? "+" : ""}$diff)',
+              '(${diff > 0 ? "+" : ""}${formatCurrency.format(diff)})',
               style: TextStyle(
-                color: diff > 0 ? Colors.green : Colors.red,
+                color: diff >= 0 ? Colors.green : Colors.red,
                 fontSize: 12,
               ),
             ),
@@ -85,6 +88,8 @@ class TripDetail extends GetView<TripDetailController> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       ...controller.tripNodes
+                          .asMap()
+                          .entries
                           .map(
                             (e) => Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),
@@ -95,14 +100,14 @@ class TripDetail extends GetView<TripDetailController> {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        e.name.toUpperCase(),
+                                        'Ngày ${e.key + 1}',
                                         style: const TextStyle(
                                           color: Colors.blue,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                       Text(
-                                        e.createdDate,
+                                        e.value.date,
                                         style: const TextStyle(
                                           fontSize: 12,
                                         ),
@@ -121,7 +126,7 @@ class TripDetail extends GetView<TripDetailController> {
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
-                                              const Text('Agenda'),
+                                              const Text('Lịch trình'),
                                               ElevatedButton(
                                                 onPressed: () {},
                                                 style: ElevatedButton.styleFrom(
@@ -138,10 +143,10 @@ class TripDetail extends GetView<TripDetailController> {
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
-                                              const Text('Expense'),
+                                              const Text('Chi tiêu'),
                                               ElevatedButton(
                                                 onPressed: () => Get.dialog(AddSpendDialog(
-                                                  nodeId: e.id,
+                                                  nodeId: e.value.id,
                                                 )),
                                                 style: ElevatedButton.styleFrom(
                                                   shape: const CircleBorder(),
@@ -158,48 +163,55 @@ class TripDetail extends GetView<TripDetailController> {
                                             height: 10,
                                           ),
                                           Container(
-                                            padding: const EdgeInsets.all(16),
-                                            decoration: BoxDecoration(color: Colors.grey[100]),
-                                            child: e.expenses.isNotEmpty
-                                                ? Column(
-                                                    children: [
-                                                      ...e.expenses
-                                                          .map((ep) => Container(
-                                                                decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey[300]!))),
-                                                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                                                child: Row(
-                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                  children: [
-                                                                    UserAvatar(uid: ep.userId),
-                                                                    Text(
-                                                                      ep.value.toString(),
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(color: Colors.grey[100]),
+                                              child: e.value.expenses.isNotEmpty
+                                                  ? Column(
+                                                      children: [
+                                                        ...e.value.expenses
+                                                            .map((ep) => GestureDetector(
+                                                                  onLongPress: () {
+                                                                    Get.dialog(AddSpendDialog(
+                                                                      nodeId: e.value.id,
+                                                                      expense: ep,
+                                                                    ));
+                                                                  },
+                                                                  child: Container(
+                                                                    decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey[300]!))),
+                                                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                                                    child: Row(
+                                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                      children: [
+                                                                        Text(ep.name),
+                                                                        Text(
+                                                                          formatCurrency.format(ep.value),
+                                                                        ),
+                                                                      ],
                                                                     ),
-                                                                  ],
-                                                                ),
-                                                              ))
-                                                          .toList(),
-                                                      Padding(
-                                                        padding: const EdgeInsets.only(top: 10),
-                                                        child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                          children: [
-                                                            const Text(
-                                                              'Total',
-                                                              style: TextStyle(fontWeight: FontWeight.bold),
-                                                            ),
-                                                            Text(
-                                                              controller.getTotalInNode(e.expenses).toString(),
-                                                              style: const TextStyle(fontWeight: FontWeight.bold),
-                                                            )
-                                                          ],
-                                                        ),
-                                                      )
-                                                    ],
-                                                  )
-                                                : const Center(
-                                                    child: Text('Please add more expense'),
-                                                  ),
-                                          )
+                                                                  ),
+                                                                ))
+                                                            .toList(),
+                                                        Padding(
+                                                          padding: const EdgeInsets.only(top: 10),
+                                                          child: Row(
+                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                            children: [
+                                                              const Text(
+                                                                'Tổng',
+                                                                style: TextStyle(fontWeight: FontWeight.bold),
+                                                              ),
+                                                              Text(
+                                                                formatCurrency.format(controller.getTotalInNode(e.value.expenses)),
+                                                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                                              )
+                                                            ],
+                                                          ),
+                                                        )
+                                                      ],
+                                                    )
+                                                  : const DataPlaceholder(
+                                                      text: 'Chưa có chi tiêu',
+                                                    ))
                                         ],
                                       ),
                                     ),
@@ -210,39 +222,64 @@ class TripDetail extends GetView<TripDetailController> {
                           )
                           .toList(),
                       ElevatedButton(
-                          onPressed: () {
-                            Get.dialog(
-                              AlertDialog(
-                                title: const Text(
-                                  'New',
-                                  textAlign: TextAlign.center,
-                                ),
-                                content: Form(
-                                    key: controller.formKey,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        TextFormField(
-                                          controller: controller.nameController,
-                                          decoration: const InputDecoration(labelText: 'Name'),
-                                        )
-                                      ],
-                                    )),
-                                actions: [
-                                  Center(
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        await controller.addNode();
-                                        Get.back();
-                                      },
-                                      child: const Text('Add'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
+                          onPressed: () async {
+                            await controller.addNode();
+                            // Get.dialog(
+                            //   AlertDialog(
+                            //     title: const Text(
+                            //       'New',
+                            //       textAlign: TextAlign.center,
+                            //     ),
+                            //     content: Form(
+                            //         key: controller.formKey,
+                            //         child: Column(
+                            //           mainAxisSize: MainAxisSize.min,
+                            //           children: [
+                            //             TextFormField(
+                            //               controller: controller.nameController,
+                            //               decoration: const InputDecoration(labelText: 'Name'),
+                            //             )
+                            //           ],
+                            //         )),
+                            //     actions: [
+                            //       Center(
+                            //         child: ElevatedButton(
+                            //           onPressed: () async {
+                            //             await controller.addNode();
+                            //             Get.back();
+                            //           },
+                            //           child: const Text('Add'),
+                            //         ),
+                            //       ),
+                            //     ],
+                            //   ),
+                            // );
                           },
-                          child: const Icon(Icons.add))
+                          child: const Icon(Icons.add)),
+                      const SizedBox(
+                        height: 16,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Chi phí khác',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              shape: const CircleBorder(),
+                              padding: const EdgeInsets.all(0),
+                            ),
+                            child: const Icon(
+                              Icons.add,
+                              size: 18,
+                            ),
+                          )
+                        ],
+                      ),
+                      // ...controller.trip.value!.otherExpense.map((e) => null)
                     ],
                   ),
                 ),
@@ -271,11 +308,11 @@ class TripDetail extends GetView<TripDetailController> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text(
-                                  'Total',
+                                  'Tổng',
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 Text(
-                                  controller.getTotal().toString(),
+                                  formatCurrency.format(controller.getTotal()),
                                   style: const TextStyle(fontWeight: FontWeight.bold),
                                 )
                               ],

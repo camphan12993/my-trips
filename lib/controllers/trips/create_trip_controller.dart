@@ -21,7 +21,7 @@ class CreateTripController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    trip = Get.arguments['trip'];
+    trip = Get.arguments?['trip'];
     if (trip != null) {
       members.clear();
       members.addAll(trip!.memberIds.map((id) => _authController.users.firstWhere((user) => user.uid == id)).toList());

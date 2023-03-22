@@ -5,11 +5,13 @@ class TripExpense {
   final String nodeId;
   final String userId;
   final double value;
+  final String name;
   TripExpense({
     required this.id,
     required this.nodeId,
     required this.userId,
     required this.value,
+    required this.name,
   });
 
   Map<String, dynamic> toMap() {
@@ -19,6 +21,7 @@ class TripExpense {
     result.addAll({'nodeId': nodeId});
     result.addAll({'userId': userId});
     result.addAll({'value': value});
+    result.addAll({'name': value});
 
     return result;
   }
@@ -28,6 +31,7 @@ class TripExpense {
       id: map['id'] ?? '',
       nodeId: map['nodeId'] ?? '',
       userId: map['userId'] ?? '',
+      name: map['name'] ?? '',
       value: map['value']?.toDouble() ?? 0,
     );
   }

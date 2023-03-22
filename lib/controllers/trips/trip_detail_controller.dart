@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:my_trips_app/core/services/trip_service.dart';
 import 'package:my_trips_app/models/trip_node.dart';
 
@@ -59,18 +60,20 @@ class TripDetailController extends GetxController {
   }
 
   Future<void> addNode() async {
-    if (formKey.currentState!.validate()) {
-      EasyLoading.show(maskType: EasyLoadingMaskType.black);
-      await _tripService.addTripNode(
-        tripId: id!,
-        payload: {
-          'name': nameController.text,
-          'createdDate': DateTime.now().toString(),
-        },
-      );
-      getTripById();
-      EasyLoading.dismiss();
-    }
+    var lastNode = tripNodes.last;
+
+    var date = DateTime.parse(lastNode.date).add(const Duration(days: 1));
+    var dateFormat = DateFormat('yyyy-MM-dd').format(date);
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
+    await _tripService.addTripNode(
+      tripId: id!,
+      payload: {
+        'name': nameController.text,
+        'date': dateFormat,
+      },
+    );
+    getTripNodes();
+    EasyLoading.dismiss();
   }
 
   double getTotalInNode(List<TripExpense> expenses) {
@@ -105,12 +108,41 @@ class TripDetailController extends GetxController {
     required String nodeId,
     required String userId,
     required double value,
+    required String name,
   }) async {
     EasyLoading.show(maskType: EasyLoadingMaskType.black);
     await _tripService.addExpense(nodeId: nodeId, payload: {
       'userId': userId,
       'value': value,
+      'name': name,
     });
+    await getTripNodes();
+    EasyLoading.dismiss();
+  }
+
+  Future<void> updateExpend({
+    required String nodeId,
+    required String expenseId,
+    required String userId,
+    required double value,
+    required String name,
+  }) async {
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
+    await _tripService.updateExpense(nodeId: nodeId, id: expenseId, payload: {
+      'userId': userId,
+      'value': value,
+      'name': name,
+    });
+    await getTripNodes();
+    EasyLoading.dismiss();
+  }
+
+  Future<void> deleteExpend({
+    required String nodeId,
+    required String expenseId,
+  }) async {
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
+    await _tripService.deleteExpense(nodeId: nodeId, id: expenseId);
     await getTripNodes();
     EasyLoading.dismiss();
   }
