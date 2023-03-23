@@ -52,7 +52,7 @@ class TripService {
   Future<List<TripNode>> getListNodes({required String tripId}) async {
     List<TripNode> tripNodes = [];
     final CollectionReference tripNodesCollection = FirebaseFirestore.instance.collection('trip_nodes');
-    var result = await tripNodesCollection.orderBy('date').where('tripId', isEqualTo: tripId).get();
+    var result = await tripNodesCollection.orderBy('createdDate').where('tripId', isEqualTo: tripId).get();
     for (var node in result.docs) {
       tripNodes.add(TripNode.fromMap(node.data()! as Map<String, dynamic>));
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import 'package:my_trips_app/controllers/index.dart';
 import 'package:my_trips_app/models/trip_expense.dart';
@@ -26,6 +27,7 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
   String? _selectedMemberId;
   final TextEditingController _moneyController = TextEditingController();
   final TextEditingController _desController = TextEditingController();
+  final TextEditingController _timeController = TextEditingController();
 
   @override
   void initState() {
@@ -34,6 +36,10 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
       _moneyController.text = widget.expense!.value.toString();
       _desController.text = widget.expense!.name;
       _selectedMemberId = widget.expense!.userId;
+      _timeController.text = widget.expense!.time;
+    }
+    if (_timeController.text.isEmpty) {
+      _timeController.text = DateFormat('HH:mm').format(DateTime.now());
     }
   }
 
@@ -91,6 +97,31 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
                     );
                   }).toList(),
                 ),
+              ),
+              TextFormField(
+                controller: _timeController,
+                readOnly: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng chọn thời gian';
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(labelText: 'Thời gian', suffixIcon: Icon(Icons.timer_outlined)),
+                onTap: () async {
+                  TimeOfDay? initTime;
+                  if (_timeController.text.isNotEmpty) {
+                    initTime = TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(_timeController.text));
+                  }
+                  TimeOfDay? pickedTime = await showTimePicker(context: context, initialTime: initTime ?? TimeOfDay.now());
+                  if (pickedTime != null) {
+                    DateTime parsedTime = DateFormat.jm().parse(pickedTime.format(context).toString());
+                    String formattedTime = DateFormat('HH:mm').format(parsedTime);
+                    setState(() {
+                      _timeController.text = formattedTime;
+                    });
+                  }
+                },
               )
             ],
           )),
@@ -104,6 +135,7 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
                         nodeId: widget.nodeId,
                         userId: _selectedMemberId!,
                         name: _desController.text,
+                        time: _timeController.text,
                         value: double.parse(_moneyController.text),
                       );
                       Get.back();
@@ -123,6 +155,7 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
                           expenseId: widget.expense!.id,
                           userId: _selectedMemberId!,
                           name: _desController.text,
+                          time: _timeController.text,
                           value: double.parse(_moneyController.text),
                         );
                         Get.back();

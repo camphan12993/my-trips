@@ -96,23 +96,12 @@ class TripDetail extends GetView<TripDetailController> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        'Ngày ${e.key + 1}',
-                                        style: const TextStyle(
-                                          color: Colors.blue,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      Text(
-                                        e.value.date,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
+                                  Text(
+                                    'Ngày ${e.key + 1}',
+                                    style: const TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   const SizedBox(
                                     height: 10,
@@ -180,11 +169,40 @@ class TripDetail extends GetView<TripDetailController> {
                                                                     decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey[300]!))),
                                                                     padding: const EdgeInsets.symmetric(vertical: 10),
                                                                     child: Row(
-                                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                                       children: [
-                                                                        Text(ep.name),
-                                                                        Text(
-                                                                          formatCurrency.format(ep.value),
+                                                                        UserAvatar(uid: ep.userId),
+                                                                        const SizedBox(
+                                                                          width: 10,
+                                                                        ),
+                                                                        Expanded(
+                                                                          child: Column(
+                                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                                            children: [
+                                                                              Text(
+                                                                                ep.time,
+                                                                                style: const TextStyle(
+                                                                                  fontSize: 12,
+                                                                                  fontStyle: FontStyle.italic,
+                                                                                  fontWeight: FontWeight.w300,
+                                                                                ),
+                                                                              ),
+                                                                              const SizedBox(
+                                                                                height: 6,
+                                                                              ),
+                                                                              Row(
+                                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                children: [
+                                                                                  Text(
+                                                                                    ep.name,
+                                                                                  ),
+                                                                                  Text(
+                                                                                    formatCurrency.format(ep.value),
+                                                                                    style: const TextStyle(fontSize: 12),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ],
+                                                                          ),
                                                                         ),
                                                                       ],
                                                                     ),

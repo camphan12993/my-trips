@@ -60,16 +60,12 @@ class TripDetailController extends GetxController {
   }
 
   Future<void> addNode() async {
-    var lastNode = tripNodes.last;
-
-    var date = DateTime.parse(lastNode.date).add(const Duration(days: 1));
-    var dateFormat = DateFormat('yyyy-MM-dd').format(date);
     EasyLoading.show(maskType: EasyLoadingMaskType.black);
     await _tripService.addTripNode(
       tripId: id!,
       payload: {
         'name': nameController.text,
-        'date': dateFormat,
+        'createdDate': DateTime.now().toUtc().toString(),
       },
     );
     getTripNodes();
@@ -109,12 +105,14 @@ class TripDetailController extends GetxController {
     required String userId,
     required double value,
     required String name,
+    required String time,
   }) async {
     EasyLoading.show(maskType: EasyLoadingMaskType.black);
     await _tripService.addExpense(nodeId: nodeId, payload: {
       'userId': userId,
       'value': value,
       'name': name,
+      'time': time,
     });
     await getTripNodes();
     EasyLoading.dismiss();
@@ -126,12 +124,14 @@ class TripDetailController extends GetxController {
     required String userId,
     required double value,
     required String name,
+    required String time,
   }) async {
     EasyLoading.show(maskType: EasyLoadingMaskType.black);
     await _tripService.updateExpense(nodeId: nodeId, id: expenseId, payload: {
       'userId': userId,
       'value': value,
       'name': name,
+      'time': time,
     });
     await getTripNodes();
     EasyLoading.dismiss();

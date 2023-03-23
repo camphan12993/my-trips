@@ -14,13 +14,24 @@ class UserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var user = _authController.getUserById(uid);
-    return Column(
-      children: [
-        // const CircleAvatar(
-        //   child: Icon(Icons.person),
-        // ),
-        Text(user?.name ?? '')
-      ],
+    String? name;
+    if (user != null) {
+      name = user.name[0];
+    }
+    return Container(
+      decoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
+      padding: const EdgeInsets.all(14),
+      child: name != null
+          ? Center(
+              child: Align(
+                alignment: Alignment.center,
+                child: Text(
+                  name,
+                  style: const TextStyle(fontSize: 24, color: Colors.white, height: 1),
+                ),
+              ),
+            )
+          : const Icon(Icons.person),
     );
   }
 }
