@@ -4,7 +4,7 @@ class TripExpense {
   final String id;
   final String nodeId;
   final String userId;
-  final double value;
+  final int value;
   final String name;
   final String time;
   TripExpense({
@@ -35,7 +35,7 @@ class TripExpense {
       nodeId: map['nodeId'] ?? '',
       userId: map['userId'] ?? '',
       name: map['name'] ?? '',
-      value: map['value']?.toDouble() ?? 0,
+      value: map['value'] ?? 0,
       time: map['time'] ?? '',
     );
   }

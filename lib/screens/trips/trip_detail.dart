@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:my_trips_app/components/user_avatar.dart';
 import 'package:my_trips_app/controllers/index.dart';
 import 'package:my_trips_app/core/app_routes.dart';
+import 'package:my_trips_app/dialogs/add_plan_node.dart';
 import 'package:my_trips_app/dialogs/add_spend_dialog.dart';
 import 'package:intl/intl.dart';
 
@@ -115,9 +116,12 @@ class TripDetail extends GetView<TripDetailController> {
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
-                                              const Text('Lịch trình'),
+                                              const Text(
+                                                'Lịch trình',
+                                                style: TextStyle(fontWeight: FontWeight.bold),
+                                              ),
                                               ElevatedButton(
-                                                onPressed: () {},
+                                                onPressed: () => Get.dialog(AddPlanNodeDialog(nodeId: e.value.id)),
                                                 style: ElevatedButton.styleFrom(
                                                   shape: const CircleBorder(),
                                                   padding: const EdgeInsets.all(0),
@@ -129,10 +133,51 @@ class TripDetail extends GetView<TripDetailController> {
                                               )
                                             ],
                                           ),
+                                          e.value.plans.isNotEmpty
+                                              ? Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: e.value.plans
+                                                      .map((e) => Row(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              const Padding(
+                                                                padding: EdgeInsets.only(top: 4.0),
+                                                                child: Badge(
+                                                                  smallSize: 8,
+                                                                  backgroundColor: Colors.blue,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                width: 10,
+                                                              ),
+                                                              Row(
+                                                                children: [
+                                                                  Text(
+                                                                    '${e.time}:',
+                                                                    style: const TextStyle(fontWeight: FontWeight.w300),
+                                                                  ),
+                                                                  const SizedBox(
+                                                                    width: 10,
+                                                                  ),
+                                                                  Text(
+                                                                    e.name,
+                                                                  )
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ))
+                                                      .toList(),
+                                                )
+                                              : const DataPlaceholder(
+                                                  text: 'Chưa có địa điểm',
+                                                ),
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
-                                              const Text('Chi tiêu'),
+                                              const Text(
+                                                'Chi tiêu',
+                                                style: TextStyle(fontWeight: FontWeight.bold),
+                                              ),
                                               ElevatedButton(
                                                 onPressed: () => Get.dialog(AddSpendDialog(
                                                   nodeId: e.value.id,

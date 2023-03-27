@@ -14,7 +14,6 @@ class DataPlaceholder extends StatelessWidget {
         text,
         style: TextStyle(
           fontSize: 12,
-          fontStyle: FontStyle.italic,
           color: Colors.grey[600],
         ),
       ),

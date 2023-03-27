@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:my_trips_app/models/plan_node.dart';
 import 'package:my_trips_app/models/trip.dart';
 import 'package:my_trips_app/models/trip_expense.dart';
 import 'package:my_trips_app/models/trip_node.dart';
@@ -63,6 +64,12 @@ class TripService {
         expenses.add(TripExpense.fromMap(e.data()));
       }
       node.expenses = expenses;
+      var plansResult = await tripNodesCollection.doc(node.id).collection('plans').get();
+      List<PlanNode> plans = [];
+      for (var e in plansResult.docs) {
+        plans.add(PlanNode.fromMap(e.data()));
+      }
+      node.plans = plans;
     }
     return tripNodes;
   }
@@ -70,6 +77,12 @@ class TripService {
   Future<void> addExpense({required String nodeId, required Map<String, dynamic> payload}) async {
     var expenses = FirebaseFirestore.instance.collection('trip_nodes').doc(nodeId).collection('expense');
     var result = await expenses.add({...payload, 'nodeId': nodeId});
+    await result.update({'id': result.id});
+  }
+
+  Future<void> addPlanNode({required String nodeId, required Map<String, dynamic> payload}) async {
+    var tripPlans = FirebaseFirestore.instance.collection('trip_nodes').doc(nodeId).collection('plans');
+    var result = await tripPlans.add(payload);
     await result.update({'id': result.id});
   }
 

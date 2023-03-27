@@ -3,6 +3,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:my_trips_app/core/services/trip_service.dart';
+import 'package:my_trips_app/models/add_plan_node_payload.dart';
 import 'package:my_trips_app/models/trip_node.dart';
 
 import '../../core/services/user_service.dart';
@@ -103,7 +104,7 @@ class TripDetailController extends GetxController {
   Future<void> addExpend({
     required String nodeId,
     required String userId,
-    required double value,
+    required int value,
     required String name,
     required String time,
   }) async {
@@ -118,11 +119,18 @@ class TripDetailController extends GetxController {
     EasyLoading.dismiss();
   }
 
+  Future<void> addPlanNode(String nodeId, AddPlanNodePayload payload) async {
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
+    await _tripService.addPlanNode(nodeId: nodeId, payload: payload.toMap());
+    await getTripNodes();
+    EasyLoading.dismiss();
+  }
+
   Future<void> updateExpend({
     required String nodeId,
     required String expenseId,
     required String userId,
-    required double value,
+    required int value,
     required String name,
     required String time,
   }) async {

@@ -1,42 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import 'package:my_trips_app/controllers/index.dart';
-import 'package:my_trips_app/models/trip_expense.dart';
+import 'package:my_trips_app/models/add_plan_node_payload.dart';
+import 'package:my_trips_app/models/plan_node.dart';
 
-import '../models/app_user.dart';
-
-class AddSpendDialog extends StatefulWidget {
+class AddPlanNodeDialog extends StatefulWidget {
   final String nodeId;
-  final TripExpense? expense;
-  const AddSpendDialog({
+  final PlanNode? expense;
+  const AddPlanNodeDialog({
     Key? key,
     required this.nodeId,
     this.expense,
   }) : super(key: key);
 
   @override
-  State<AddSpendDialog> createState() => _AddSpendDialogState();
+  State<AddPlanNodeDialog> createState() => _AddPlanNodeDialogState();
 }
 
-class _AddSpendDialogState extends State<AddSpendDialog> {
+class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
   final _formKey = GlobalKey<FormState>();
   final TripDetailController _tripDetailController = Get.find();
-  String? _selectedMemberId;
-  final TextEditingController _moneyController = TextEditingController();
-  final TextEditingController _desController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _noteController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     if (widget.expense != null) {
-      _moneyController.text = toCurrencyString(widget.expense!.value.toString(), thousandSeparator: ThousandSeparator.Period, mantissaLength: 0);
-      _desController.text = widget.expense!.name;
-      _selectedMemberId = widget.expense!.userId;
+      _noteController.text = widget.expense!.name;
       _timeController.text = widget.expense!.time;
     }
     if (_timeController.text.isEmpty) {
@@ -47,60 +41,24 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Chi tiêu'),
+      title: const Text('Địa điểm'),
       content: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                controller: _desController,
-                decoration: const InputDecoration(labelText: 'Mặt hàng'),
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Tên địa điểm'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Vui lòng thêm mặt hàng';
+                    return 'Vui nhập địa điểm';
                   }
                   return null;
                 },
               ),
               const SizedBox(
                 height: 10,
-              ),
-              TextFormField(
-                controller: _moneyController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  CurrencyInputFormatter(mantissaLength: 0, thousandSeparator: ThousandSeparator.Period),
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập giá trị';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(labelText: 'Giá trị', suffixText: 'đ'),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              SizedBox(
-                height: 60,
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  value: _selectedMemberId,
-                  onChanged: (String? value) {
-                    _selectedMemberId = value;
-                    setState(() {});
-                  },
-                  hint: const Text('Người chi'),
-                  items: _tripDetailController.members.map<DropdownMenuItem<String>>((AppUser value) {
-                    return DropdownMenuItem<String>(
-                      value: value.uid,
-                      child: Text(value.name),
-                    );
-                  }).toList(),
-                ),
               ),
               TextFormField(
                 controller: _timeController,
@@ -126,7 +84,14 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
                     });
                   }
                 },
-              )
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              TextFormField(
+                controller: _noteController,
+                decoration: const InputDecoration(labelText: 'Ghi chú'),
+              ),
             ],
           )),
       actions: [
@@ -134,15 +99,15 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
             ? Center(
                 child: ElevatedButton(
                   onPressed: () async {
-                    print(toNumericString(_moneyController.text, mantissaSeparator: ','));
-                    if (_formKey.currentState!.validate() && _selectedMemberId != null) {
-                      await _tripDetailController.addExpend(
-                        nodeId: widget.nodeId,
-                        userId: _selectedMemberId!,
-                        name: _desController.text,
-                        time: _timeController.text,
-                        value: int.parse((toNumericString(_moneyController.text))),
-                      );
+                    if (_formKey.currentState!.validate()) {
+                      await _tripDetailController.addPlanNode(
+                          widget.nodeId,
+                          AddPlanNodePayload(
+                            name: _nameController.text,
+                            time: _timeController.text,
+                            note: _noteController.text,
+                            nodeId: widget.nodeId,
+                          ));
                       Get.back();
                     }
                   },
@@ -154,15 +119,15 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
                 children: [
                   ElevatedButton(
                     onPressed: () async {
-                      if (_formKey.currentState!.validate() && _selectedMemberId != null) {
-                        await _tripDetailController.updateExpend(
-                          nodeId: widget.nodeId,
-                          expenseId: widget.expense!.id,
-                          userId: _selectedMemberId!,
-                          name: _desController.text,
-                          time: _timeController.text,
-                          value: int.parse(toNumericString(_moneyController.text)),
-                        );
+                      if (_formKey.currentState!.validate()) {
+                        await _tripDetailController.addPlanNode(
+                            widget.nodeId,
+                            AddPlanNodePayload(
+                              name: _nameController.text,
+                              time: _timeController.text,
+                              note: _noteController.text,
+                              nodeId: widget.nodeId,
+                            ));
                         Get.back();
                       }
                     },
