@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_trips_app/controllers/index.dart';
 import 'package:intl/intl.dart';
+import 'package:my_trips_app/widgets/data_placeholder.dart';
 
 import '../../models/app_user.dart';
 
@@ -13,7 +14,7 @@ class CreateTrip extends GetView<CreateTripController> {
     return Obx(
       () => Scaffold(
         appBar: AppBar(
-          title: Text(controller.trip != null ? 'Trip Settings' : 'Create Trip'),
+          title: Text(controller.trip != null ? 'Thông tin chuyến đi' : 'Tạo chuyến đi'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Get.back(),
@@ -32,20 +33,20 @@ class CreateTrip extends GetView<CreateTripController> {
                       controller: controller.nameController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Name is required';
+                          return 'Vui lòng nhập tên';
                         }
                         return null;
                       },
                       decoration: const InputDecoration(
-                        hintText: 'Input trip name',
-                        labelText: 'Name',
+                        hintText: 'Tên',
+                        labelText: 'Tên chuyến đi',
                       ),
                     ),
                     TextFormField(
                       controller: controller.startDateController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Select start date';
+                          return 'Chọn ngày';
                         }
                         return null;
                       },
@@ -61,7 +62,7 @@ class CreateTrip extends GetView<CreateTripController> {
                           controller.startDateController.text = DateFormat('dd-MM-yyyy').format(controller.selectedDate.value!);
                         }
                       },
-                      decoration: const InputDecoration(hintText: 'Select start date', labelText: 'Start Date', suffixIcon: Icon(Icons.calendar_month)),
+                      decoration: const InputDecoration(hintText: 'Ngày khởi hành', labelText: 'Ngày khởi hành', suffixIcon: Icon(Icons.calendar_month)),
                     ),
                   ],
                 ),
@@ -69,77 +70,49 @@ class CreateTrip extends GetView<CreateTripController> {
               const SizedBox(
                 height: 10,
               ),
-              Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 60,
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: controller.selectedUser.value,
-                        onChanged: (String? value) {
-                          controller.selectedUser.value = value;
-                        },
-                        hint: const Text('Select member'),
-                        items: controller.listUsers.map<DropdownMenuItem<String>>((AppUser value) {
-                          return DropdownMenuItem<String>(
-                            value: value.uid,
-                            child: Text(value.name),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  ElevatedButton(
-                    onPressed: controller.selectedUser.value != null ? () => controller.addMember(controller.selectedUser.value!) : null,
-                    style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(),
-                    ),
-                    child: const Icon(
-                      Icons.add,
-                      size: 20,
-                    ),
-                  )
-                ],
+              SizedBox(
+                height: 60,
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: controller.selectedUser.value,
+                  onChanged: (String? value) {
+                    controller.selectedUser.value = value;
+                    controller.addMember(controller.selectedUser.value!);
+                  },
+                  hint: const Text('Thêm thành viên'),
+                  items: controller.listUsers.map<DropdownMenuItem<String>>((AppUser value) {
+                    return DropdownMenuItem<String>(
+                      value: value.uid,
+                      child: Text(value.name),
+                    );
+                  }).toList(),
+                ),
               ),
               controller.members.isNotEmpty
                   ? Column(
                       children: controller.members
-                          .map((u) => Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 6),
-                                child: Row(
-                                  children: [
-                                    const CircleAvatar(
-                                      child: Icon(Icons.person),
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Expanded(child: Text(u.name)),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    IconButton(
-                                      color: Colors.red,
-                                      onPressed: () => controller.deleteMember(u.uid),
-                                      icon: const Icon(Icons.delete),
-                                    )
-                                  ],
-                                ),
+                          .map((u) => Row(
+                                children: [
+                                  Expanded(
+                                      child: Text(
+                                    u.name,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  )),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  IconButton(
+                                    color: Colors.red,
+                                    onPressed: () => controller.deleteMember(u.uid),
+                                    icon: const Icon(Icons.delete),
+                                  )
+                                ],
                               ))
                           .toList(),
                     )
                   : const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Center(
-                        child: Text(
-                          'Please add more member',
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
+                      padding: EdgeInsets.all(18.0),
+                      child: DataPlaceholder(text: 'Chưa có thành viên nào'),
                     ),
               const SizedBox(
                 height: 20,
@@ -147,11 +120,11 @@ class CreateTrip extends GetView<CreateTripController> {
               controller.trip != null
                   ? ElevatedButton(
                       onPressed: controller.updateTrip,
-                      child: const Text('Save'),
+                      child: const Text('Lưu'),
                     )
                   : ElevatedButton(
                       onPressed: controller.create,
-                      child: const Text('Create'),
+                      child: const Text('Tạo'),
                     ),
             ],
           ),

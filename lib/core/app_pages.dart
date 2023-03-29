@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:my_trips_app/controllers/index.dart';
 import 'package:my_trips_app/core/app_routes.dart';
+import 'package:my_trips_app/screens/auth/username_login.dart';
+import 'package:my_trips_app/screens/auth/username_register.dart';
 import 'package:my_trips_app/screens/index.dart';
 
 class AppPages {
@@ -37,11 +39,29 @@ class AppPages {
       ),
     ),
     GetPage(
+      name: AppRoutes.usernameLogin,
+      page: () => const UsernameLogin(),
+      binding: BindingsBuilder(
+        () {
+          Get.lazyPut(() => UsernameLoginController());
+        },
+      ),
+    ),
+    GetPage(
       name: AppRoutes.register,
       page: () => const Register(),
       binding: BindingsBuilder(
         () {
           Get.lazyPut(() => RegisterController());
+        },
+      ),
+    ),
+    GetPage(
+      name: AppRoutes.usernameRegister,
+      page: () => const UsernameRegister(),
+      binding: BindingsBuilder(
+        () {
+          Get.lazyPut(() => UsernameRegisterController());
         },
       ),
     ),

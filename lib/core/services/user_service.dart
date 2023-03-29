@@ -32,4 +32,14 @@ class UserService {
     }
     return users;
   }
+
+  Future<List<AppUser>> getListMember(List<String> uids) async {
+    List<AppUser> users = [];
+    final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
+    QuerySnapshot result = await userCollection.where('uid', whereIn: uids).get();
+    for (var e in result.docs) {
+      users.add(AppUser.fromMap(e.data()! as Map<String, dynamic>));
+    }
+    return users;
+  }
 }

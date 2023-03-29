@@ -1,3 +1,4 @@
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:my_trips_app/controllers/auth/auth_controller.dart';
 import 'package:my_trips_app/core/app_routes.dart';
@@ -12,7 +13,7 @@ class HomeController extends GetxController {
   RxList<Trip> trips = RxList([]);
   Future<void> signout() async {
     await authService.signOut();
-    Get.offAndToNamed(AppRoutes.login);
+    Get.offAllNamed(AppRoutes.login);
   }
 
   @override
@@ -22,8 +23,17 @@ class HomeController extends GetxController {
   }
 
   Future<void> getTrips() async {
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
+
     var result = await _tripService.getTrips(uid: _authController.user!.uid);
     trips.clear();
     trips.addAll(result);
+    EasyLoading.dismiss();
+  }
+
+  Future<void> deleteTrip(String id) async {
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
+    await _tripService.deleteTrip(id);
+    EasyLoading.dismiss();
   }
 }

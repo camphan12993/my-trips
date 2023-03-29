@@ -10,7 +10,7 @@ class TripSettings extends GetView<TripSettingController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: const Text('Thông tin'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -25,13 +25,13 @@ class TripSettings extends GetView<TripSettingController> {
                     controller: controller.nameController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Name is required';
+                        return 'Vui lòng nhập tên';
                       }
                       return null;
                     },
                     decoration: const InputDecoration(
                       hintText: 'Input your name',
-                      labelText: 'Name',
+                      labelText: 'Tên Chuyến Đi',
                     ),
                   ),
                 ],

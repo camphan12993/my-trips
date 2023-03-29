@@ -8,11 +8,11 @@ import 'package:my_trips_app/models/plan_node.dart';
 
 class AddPlanNodeDialog extends StatefulWidget {
   final String nodeId;
-  final PlanNode? expense;
+  final PlanNode? plan;
   const AddPlanNodeDialog({
     Key? key,
     required this.nodeId,
-    this.expense,
+    this.plan,
   }) : super(key: key);
 
   @override
@@ -29,9 +29,10 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
   @override
   void initState() {
     super.initState();
-    if (widget.expense != null) {
-      _noteController.text = widget.expense!.name;
-      _timeController.text = widget.expense!.time;
+    if (widget.plan != null) {
+      _nameController.text = widget.plan!.name;
+      _noteController.text = widget.plan!.note ?? '';
+      _timeController.text = widget.plan!.time;
     }
     if (_timeController.text.isEmpty) {
       _timeController.text = DateFormat('HH:mm').format(DateTime.now());
@@ -95,7 +96,7 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
             ],
           )),
       actions: [
-        widget.expense == null
+        widget.plan == null
             ? Center(
                 child: ElevatedButton(
                   onPressed: () async {
@@ -120,8 +121,9 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
                   ElevatedButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        await _tripDetailController.addPlanNode(
+                        await _tripDetailController.updatePlanNode(
                             widget.nodeId,
+                            widget.plan!.id,
                             AddPlanNodePayload(
                               name: _nameController.text,
                               time: _timeController.text,
@@ -139,9 +141,9 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                     onPressed: () async {
-                      await _tripDetailController.deleteExpend(
-                        nodeId: widget.nodeId,
-                        expenseId: widget.expense!.id,
+                      await _tripDetailController.deletePlanNode(
+                        widget.nodeId,
+                        widget.plan!.id,
                       );
                       Get.back();
                     },

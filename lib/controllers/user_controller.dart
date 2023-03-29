@@ -23,6 +23,10 @@ class UserProfileController extends GetxController {
     }
   }
 
+  Future<void> signout() async {
+    await _authController.signout();
+  }
+
   @override
   void onInit() {
     super.onInit();

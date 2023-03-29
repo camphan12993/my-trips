@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:my_trips_app/core/services/trip_service.dart';
 import 'package:my_trips_app/models/add_plan_node_payload.dart';
+import 'package:my_trips_app/models/expense_payload.dart';
+import 'package:my_trips_app/models/trip_expense_payload.dart';
 import 'package:my_trips_app/models/trip_node.dart';
 
 import '../../core/services/user_service.dart';
@@ -16,11 +18,11 @@ class TripDetailController extends GetxController {
   Rxn<Trip> trip = Rxn<Trip>();
   RxList<TripNode> tripNodes = RxList([]);
   final TripService _tripService = TripService();
+  final UserService _userService = UserService();
   final formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
   final RxList<AppUser> members = RxList<AppUser>([]);
   RxList<AppUser> users = RxList([]);
-  final UserService _userService = UserService();
   RxBool isShowDetail = RxBool(false);
   RxBool isLoading = RxBool(false);
 
@@ -31,20 +33,10 @@ class TripDetailController extends GetxController {
     if (id != null) {
       isLoading.value = true;
       await getTripById();
-      if (trip.value != null) {
-        getUserList();
-      }
       await getTripNodes();
+      await getListMember();
       isLoading.value = false;
     }
-  }
-
-  Future<void> getUserList() async {
-    var result = await _userService.getListUser();
-    users.clear();
-    users.addAll(result);
-    members.clear();
-    members.addAll(trip.value!.memberIds.map((id) => users.firstWhere((user) => user.uid == id)).toList());
   }
 
   Future<void> getTripById() async {
@@ -52,6 +44,16 @@ class TripDetailController extends GetxController {
     if (result != null) {
       trip.value = result;
     }
+  }
+
+  AppUser getMember(String id) {
+    return members.firstWhere((m) => m.uid == id);
+  }
+
+  Future<void> getListMember() async {
+    var result = await _userService.getListMember(trip.value!.memberIds);
+    members.clear();
+    members.addAll(result);
   }
 
   Future<void> getTripNodes() async {
@@ -64,12 +66,14 @@ class TripDetailController extends GetxController {
     EasyLoading.show(maskType: EasyLoadingMaskType.black);
     await _tripService.addTripNode(
       tripId: id!,
-      payload: {
-        'name': nameController.text,
-        'createdDate': DateTime.now().toUtc().toString(),
-      },
     );
     getTripNodes();
+    EasyLoading.dismiss();
+  }
+
+  Future<void> deleteNode(String id) async {
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
+    await _tripService.deleteNode(id);
     EasyLoading.dismiss();
   }
 
@@ -86,6 +90,7 @@ class TripDetailController extends GetxController {
     for (var node in tripNodes) {
       result += getTotalInNode(node.expenses);
     }
+    result += getTotalInNode(trip.value!.otherExpense);
     return result;
   }
 
@@ -98,24 +103,32 @@ class TripDetailController extends GetxController {
         }
       }
     }
+    for (var e in trip.value!.otherExpense) {
+      if (e.userId == id) {
+        result += e.value;
+      }
+    }
     return result;
   }
 
-  Future<void> addExpend({
-    required String nodeId,
-    required String userId,
-    required int value,
-    required String name,
-    required String time,
-  }) async {
+  Future<void> addExpend(ExpensePayload payload) async {
     EasyLoading.show(maskType: EasyLoadingMaskType.black);
-    await _tripService.addExpense(nodeId: nodeId, payload: {
-      'userId': userId,
-      'value': value,
-      'name': name,
-      'time': time,
-    });
+    await _tripService.addExpense(nodeId: payload.nodeId, payload: payload.toMap());
     await getTripNodes();
+    EasyLoading.dismiss();
+  }
+
+  Future<void> addTripExpense(TripExpensePayload payload) async {
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
+    await _tripService.addTripOtherExpense(tripId: trip.value!.id, payload: payload.toMap());
+    await getTripById();
+    EasyLoading.dismiss();
+  }
+
+  Future<void> updateTripExpense(String id, TripExpensePayload payload) async {
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
+    await _tripService.updateTripOtherExpense(tripId: trip.value!.id, id: id, payload: payload.toMap());
+    await getTripById();
     EasyLoading.dismiss();
   }
 
@@ -126,21 +139,23 @@ class TripDetailController extends GetxController {
     EasyLoading.dismiss();
   }
 
-  Future<void> updateExpend({
-    required String nodeId,
-    required String expenseId,
-    required String userId,
-    required int value,
-    required String name,
-    required String time,
-  }) async {
+  Future<void> deletePlanNode(String nodeId, String id) async {
     EasyLoading.show(maskType: EasyLoadingMaskType.black);
-    await _tripService.updateExpense(nodeId: nodeId, id: expenseId, payload: {
-      'userId': userId,
-      'value': value,
-      'name': name,
-      'time': time,
-    });
+    await _tripService.deletePlanNode(nodeId: nodeId, id: id);
+    await getTripNodes();
+    EasyLoading.dismiss();
+  }
+
+  Future<void> updatePlanNode(String nodeId, String id, AddPlanNodePayload payload) async {
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
+    await _tripService.updatePlanNode(nodeId: nodeId, id: id, payload: payload.toMap());
+    await getTripNodes();
+    EasyLoading.dismiss();
+  }
+
+  Future<void> updateExpend(String id, ExpensePayload payload) async {
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
+    await _tripService.updateExpense(nodeId: payload.nodeId, id: id, payload: payload.toMap());
     await getTripNodes();
     EasyLoading.dismiss();
   }
@@ -152,6 +167,13 @@ class TripDetailController extends GetxController {
     EasyLoading.show(maskType: EasyLoadingMaskType.black);
     await _tripService.deleteExpense(nodeId: nodeId, id: expenseId);
     await getTripNodes();
+    EasyLoading.dismiss();
+  }
+
+  Future<void> deleteTripExpense(String id) async {
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
+    await _tripService.deleteTripOtherExpense(tripId: trip.value!.id, id: id);
+    await getTripById();
     EasyLoading.dismiss();
   }
 }

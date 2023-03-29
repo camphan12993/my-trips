@@ -9,10 +9,10 @@ class UserProfile extends GetView<UserProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Thông tin cá nhân'),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: controller.signout,
             icon: const Icon(Icons.logout),
           ),
         ],
@@ -24,22 +24,22 @@ class UserProfile extends GetView<UserProfileController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
-                initialValue: controller.user.email,
-                readOnly: true,
-                style: TextStyle(color: Colors.grey[500]),
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  enabled: false,
-                ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
+              // TextFormField(
+              //   initialValue: controller.user.email,
+              //   readOnly: true,
+              //   style: TextStyle(color: Colors.grey[500]),
+              //   decoration: const InputDecoration(
+              //     labelText: 'Email',
+              //     enabled: false,
+              //   ),
+              // ),
+              // const SizedBox(
+              //   height: 10,
+              // ),
               TextFormField(
                 controller: controller.nameController,
                 decoration: const InputDecoration(
-                  labelText: 'Name',
+                  labelText: 'Nick name',
                 ),
               ),
               const SizedBox(
@@ -47,7 +47,7 @@ class UserProfile extends GetView<UserProfileController> {
               ),
               ElevatedButton(
                 onPressed: controller.updateUser,
-                child: const Text('Save'),
+                child: const Text('Lưu'),
               ),
             ],
           ),

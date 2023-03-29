@@ -3,6 +3,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:my_trips_app/controllers/auth/auth_controller.dart';
 import 'package:my_trips_app/core/services/trip_service.dart';
+import 'package:my_trips_app/core/services/user_service.dart';
 
 import '../../models/app_user.dart';
 import '../../models/trip.dart';
@@ -12,19 +13,22 @@ class CreateTripController extends GetxController {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
   final TripService _tripService = TripService();
+  final UserService _userService = UserService();
   final AuthController _authController = Get.find();
   final RxList<AppUser> members = RxList<AppUser>([]);
   final RxnString selectedUser = RxnString();
+  final RxList<AppUser> users = RxList<AppUser>([]);
   Trip? trip;
   Rxn<DateTime> selectedDate = Rxn();
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     super.onInit();
     trip = Get.arguments?['trip'];
+    await getUserList();
     if (trip != null) {
       members.clear();
-      members.addAll(trip!.memberIds.map((id) => _authController.users.firstWhere((user) => user.uid == id)).toList());
+      members.addAll(trip!.memberIds.map((id) => users.firstWhere((user) => user.uid == id)).toList());
       nameController.text = trip!.name;
       startDateController.text = trip!.startDate;
       try {
@@ -35,7 +39,13 @@ class CreateTripController extends GetxController {
     }
   }
 
-  List<AppUser> get listUsers => _authController.users
+  Future<void> getUserList() async {
+    var result = await _userService.getListUser();
+    users.clear();
+    users.addAll(result);
+  }
+
+  List<AppUser> get listUsers => users
       .where(
         (u) => !members.any((m) => m.uid == u.uid) && u.uid != _authController.user!.uid,
       )
@@ -84,7 +94,7 @@ class CreateTripController extends GetxController {
   }
 
   void addMember(String id) {
-    var user = _authController.users.firstWhere((user) => user.uid == id);
+    var user = users.firstWhere((user) => user.uid == id);
     members.add(user);
     selectedUser.value = null;
   }

@@ -5,18 +5,20 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import 'package:my_trips_app/controllers/index.dart';
+import 'package:my_trips_app/models/expense_payload.dart';
 import 'package:my_trips_app/models/trip_expense.dart';
+import 'package:my_trips_app/models/trip_expense_payload.dart';
 
 import '../models/app_user.dart';
 
 class AddSpendDialog extends StatefulWidget {
-  final String nodeId;
+  final String? nodeId;
   final TripExpense? expense;
   const AddSpendDialog({
-    Key? key,
-    required this.nodeId,
+    super.key,
+    this.nodeId,
     this.expense,
-  }) : super(key: key);
+  });
 
   @override
   State<AddSpendDialog> createState() => _AddSpendDialogState();
@@ -28,7 +30,8 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
   String? _selectedMemberId;
   final TextEditingController _moneyController = TextEditingController();
   final TextEditingController _desController = TextEditingController();
-  final TextEditingController _timeController = TextEditingController();
+  final TextEditingController _noteController = TextEditingController();
+  // final TextEditingController _timeController = TextEditingController();
 
   @override
   void initState() {
@@ -37,11 +40,12 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
       _moneyController.text = toCurrencyString(widget.expense!.value.toString(), thousandSeparator: ThousandSeparator.Period, mantissaLength: 0);
       _desController.text = widget.expense!.name;
       _selectedMemberId = widget.expense!.userId;
-      _timeController.text = widget.expense!.time;
+      _noteController.text = widget.expense!.note;
+      // _timeController.text = widget.expense!.time;
     }
-    if (_timeController.text.isEmpty) {
-      _timeController.text = DateFormat('HH:mm').format(DateTime.now());
-    }
+    // if (_timeController.text.isEmpty) {
+    //   _timeController.text = DateFormat('HH:mm').format(DateTime.now());
+    // }
   }
 
   @override
@@ -102,31 +106,38 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
                   }).toList(),
                 ),
               ),
+              const SizedBox(
+                height: 10,
+              ),
               TextFormField(
-                controller: _timeController,
-                readOnly: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng chọn thời gian';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(labelText: 'Thời gian', suffixIcon: Icon(Icons.timer_outlined)),
-                onTap: () async {
-                  TimeOfDay? initTime;
-                  if (_timeController.text.isNotEmpty) {
-                    initTime = TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(_timeController.text));
-                  }
-                  TimeOfDay? pickedTime = await showTimePicker(context: context, initialTime: initTime ?? TimeOfDay.now());
-                  if (pickedTime != null) {
-                    DateTime parsedTime = DateFormat.jm().parse(pickedTime.format(context).toString());
-                    String formattedTime = DateFormat('HH:mm').format(parsedTime);
-                    setState(() {
-                      _timeController.text = formattedTime;
-                    });
-                  }
-                },
-              )
+                controller: _noteController,
+                decoration: const InputDecoration(labelText: 'Ghi chú'),
+              ),
+              // TextFormField(
+              //   controller: _timeController,
+              //   readOnly: true,
+              //   validator: (value) {
+              //     if (value == null || value.isEmpty) {
+              //       return 'Vui lòng chọn thời gian';
+              //     }
+              //     return null;
+              //   },
+              //   decoration: const InputDecoration(labelText: 'Thời gian', suffixIcon: Icon(Icons.timer_outlined)),
+              //   onTap: () async {
+              //     TimeOfDay? initTime;
+              //     if (_timeController.text.isNotEmpty) {
+              //       initTime = TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(_timeController.text));
+              //     }
+              //     TimeOfDay? pickedTime = await showTimePicker(context: context, initialTime: initTime ?? TimeOfDay.now());
+              //     if (pickedTime != null) {
+              //       DateTime parsedTime = DateFormat.jm().parse(pickedTime.format(context).toString());
+              //       String formattedTime = DateFormat('HH:mm').format(parsedTime);
+              //       setState(() {
+              //         _timeController.text = formattedTime;
+              //       });
+              //     }
+              //   },
+              // )
             ],
           )),
       actions: [
@@ -134,15 +145,26 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
             ? Center(
                 child: ElevatedButton(
                   onPressed: () async {
-                    print(toNumericString(_moneyController.text, mantissaSeparator: ','));
                     if (_formKey.currentState!.validate() && _selectedMemberId != null) {
-                      await _tripDetailController.addExpend(
-                        nodeId: widget.nodeId,
-                        userId: _selectedMemberId!,
-                        name: _desController.text,
-                        time: _timeController.text,
-                        value: int.parse((toNumericString(_moneyController.text))),
-                      );
+                      if (widget.nodeId != null) {
+                        await _tripDetailController.addExpend(
+                          ExpensePayload(
+                            nodeId: widget.nodeId!,
+                            userId: _selectedMemberId!,
+                            value: int.parse((toNumericString(_moneyController.text))),
+                            name: _desController.text,
+                            note: _noteController.text,
+                          ),
+                        );
+                      } else {
+                        await _tripDetailController.addTripExpense(TripExpensePayload(
+                          userId: _selectedMemberId!,
+                          value: int.parse((toNumericString(_moneyController.text))),
+                          name: _desController.text,
+                          note: _noteController.text,
+                        ));
+                      }
+
                       Get.back();
                     }
                   },
@@ -155,14 +177,28 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
                   ElevatedButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate() && _selectedMemberId != null) {
-                        await _tripDetailController.updateExpend(
-                          nodeId: widget.nodeId,
-                          expenseId: widget.expense!.id,
-                          userId: _selectedMemberId!,
-                          name: _desController.text,
-                          time: _timeController.text,
-                          value: int.parse(toNumericString(_moneyController.text)),
-                        );
+                        if (widget.nodeId != null) {
+                          await _tripDetailController.updateExpend(
+                            widget.expense!.id,
+                            ExpensePayload(
+                              nodeId: widget.nodeId!,
+                              userId: _selectedMemberId!,
+                              value: int.parse((toNumericString(_moneyController.text))),
+                              name: _desController.text,
+                              note: _noteController.text,
+                            ),
+                          );
+                        } else {
+                          await _tripDetailController.updateTripExpense(
+                              widget.expense!.id,
+                              TripExpensePayload(
+                                userId: _selectedMemberId!,
+                                value: int.parse((toNumericString(_moneyController.text))),
+                                name: _desController.text,
+                                note: _noteController.text,
+                              ));
+                        }
+
                         Get.back();
                       }
                     },
@@ -174,10 +210,16 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                     onPressed: () async {
-                      await _tripDetailController.deleteExpend(
-                        nodeId: widget.nodeId,
-                        expenseId: widget.expense!.id,
-                      );
+                      if (widget.nodeId != null) {
+                        await _tripDetailController.deleteExpend(
+                          nodeId: widget.nodeId!,
+                          expenseId: widget.expense!.id,
+                        );
+                      } else {
+                        await _tripDetailController.deleteTripExpense(
+                          widget.expense!.id,
+                        );
+                      }
                       Get.back();
                     },
                     child: const Text('Xoá'),

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:my_trips_app/core/services/user_service.dart';
 import 'package:my_trips_app/models/app_user.dart';
@@ -5,6 +6,39 @@ import 'package:my_trips_app/models/user_payload.dart';
 
 class AuthService {
   final UserService _userService = UserService();
+  Future<AppUser> createUsernameAccount({required String name, required String username}) async {
+    try {
+      final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
+      var existUser = await userCollection.where('username', isEqualTo: username).get();
+      if (existUser.docs.isNotEmpty) {
+        throw ('Username đã tồn tại');
+      }
+      var result = await userCollection.add({'name': name, 'username': username});
+      await result.update({'uid': result.id});
+      var user = await result.get();
+      return AppUser.fromMap(user.data() as Map<String, dynamic>);
+    } on FirebaseAuthException catch (e) {
+      throw (e.message ?? '');
+    } catch (e) {
+      throw (e.toString());
+    }
+  }
+
+  Future<AppUser> loginUsername({required String username}) async {
+    try {
+      final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
+      var existUser = await userCollection.where('username', isEqualTo: username).get();
+      if (existUser.docs.isNotEmpty) {
+        return AppUser.fromMap(existUser.docs.first.data() as Map<String, dynamic>);
+      }
+      throw ('Người dùng không tồn tại');
+    } on FirebaseAuthException catch (e) {
+      throw (e.message ?? '');
+    } catch (e) {
+      throw (e.toString());
+    }
+  }
+
   Future<User?> createAccount({
     required String name,
     required String email,

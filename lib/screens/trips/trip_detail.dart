@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:my_trips_app/components/user_avatar.dart';
 import 'package:my_trips_app/controllers/index.dart';
 import 'package:my_trips_app/core/app_routes.dart';
 import 'package:my_trips_app/dialogs/add_plan_node.dart';
 import 'package:my_trips_app/dialogs/add_spend_dialog.dart';
 import 'package:intl/intl.dart';
+import 'package:my_trips_app/models/trip_expense.dart';
+import 'package:my_trips_app/widgets/app_icon_button.dart';
+import 'package:my_trips_app/widgets/expansion_panel.dart';
 
 import '../../widgets/data_placeholder.dart';
 
@@ -15,6 +17,8 @@ class TripDetail extends GetView<TripDetailController> {
 
   Widget buildExpenseDetailForMember(String id) {
     var userExpense = controller.getTotalOfMember(id);
+    var member = controller.getMember(id);
+
     var diff = userExpense - controller.getTotal() / controller.members.length;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -23,7 +27,10 @@ class TripDetail extends GetView<TripDetailController> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              UserAvatar(uid: id),
+              Text(
+                member.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               Text(
                 formatCurrency.format(userExpense),
               ),
@@ -47,6 +54,70 @@ class TripDetail extends GetView<TripDetailController> {
     );
   }
 
+  Widget buildExpenseItem(TripExpense data, [String? nodeId]) {
+    var member = controller.getMember(data.userId);
+    return GestureDetector(
+      onLongPress: () {
+        Get.dialog(AddSpendDialog(
+          nodeId: nodeId,
+          expense: data,
+        ));
+      },
+      child: Container(
+        decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey[300]!))),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                // SizedBox(
+                //   width: 20,
+                //   child: Checkbox(
+                //     value: data.hasPaid,
+                //     onChanged: (value) {},
+                //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                //   ),
+                // ),
+                // const SizedBox(
+                //   width: 6,
+                // ),
+                Text(
+                  '(${member.name})',
+                  style: const TextStyle(color: Colors.blue, fontSize: 12),
+                ),
+                const SizedBox(
+                  width: 6,
+                ),
+                Text(
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  data.name,
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                const Expanded(child: SizedBox.shrink()),
+                Text(
+                  formatCurrency.format(data.value),
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            if (data.note.isNotEmpty) ...[
+              const SizedBox(
+                height: 6,
+              ),
+              Text(
+                '(${data.note})',
+                style: const TextStyle(fontStyle: FontStyle.italic),
+              ),
+            ]
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -56,23 +127,37 @@ class TripDetail extends GetView<TripDetailController> {
         );
       } else if (controller.trip.value != null) {
         return Scaffold(
+          backgroundColor: Colors.white,
           appBar: AppBar(
             title: Text(controller.trip.value!.name),
             actions: [
-              IconButton(
-                onPressed: () {
-                  Get.toNamed(
-                    '${AppRoutes.trips}/${controller.id}/settings',
-                    arguments: {
-                      'trip': controller.trip.value,
-                    },
-                  )!
-                      .then((value) {
-                    controller.getTripById();
-                  });
-                },
-                icon: const Icon(Icons.settings),
-              ),
+              PopupMenuButton(
+                  onSelected: (value) async {
+                    if (value == 0) {
+                      Get.toNamed(
+                        '${AppRoutes.trips}/${controller.id}/settings',
+                        arguments: {
+                          'trip': controller.trip.value,
+                        },
+                      )!
+                          .then((value) {
+                        controller.getTripById();
+                      });
+                    }
+                    if (value == 1) {
+                      await controller.addNode();
+                    }
+                  },
+                  itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: 0,
+                          child: Text('Cài đặt'),
+                        ),
+                        PopupMenuItem(
+                          value: 1,
+                          child: Text('Thêm ngày'),
+                        ),
+                      ])
             ],
           ),
           body: Stack(
@@ -80,9 +165,9 @@ class TripDetail extends GetView<TripDetailController> {
               SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.only(
-                    top: 12,
-                    left: 12,
-                    right: 12,
+                    top: 20,
+                    left: 16,
+                    right: 16,
                     bottom: 80,
                   ),
                   child: Column(
@@ -92,257 +177,237 @@ class TripDetail extends GetView<TripDetailController> {
                           .asMap()
                           .entries
                           .map(
-                            (e) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6),
+                            (e) => Container(
+                              margin: const EdgeInsets.only(
+                                bottom: 20,
+                              ),
+                              padding: const EdgeInsets.only(bottom: 20),
+                              decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey[300]!))),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Ngày ${e.key + 1}',
-                                    style: const TextStyle(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Ngày ${e.key + 1}',
+                                        style: const TextStyle(
+                                          color: Colors.blue,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 32,
+                                        child: PopupMenuButton(
+                                            icon: const Icon(Icons.more_vert),
+                                            onSelected: (value) {
+                                              if (value == 1) {
+                                                Get.dialog(
+                                                  AlertDialog(
+                                                    title: const Text(
+                                                      'Xoá ngày này?',
+                                                      style: TextStyle(fontSize: 14),
+                                                    ),
+                                                    actionsAlignment: MainAxisAlignment.center,
+                                                    actions: [
+                                                      ElevatedButton(
+                                                        onPressed: () async {
+                                                          await controller.deleteNode(e.value.id);
+                                                          Get.back();
+                                                          controller.getTripNodes();
+                                                        },
+                                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                                        child: const Text('Xoá'),
+                                                      )
+                                                    ],
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            itemBuilder: (context) => [
+                                                  PopupMenuItem(
+                                                      value: 1,
+                                                      child: Text(
+                                                        'Xoá',
+                                                        style: TextStyle(color: Colors.red),
+                                                      ))
+                                                ]),
+                                      )
+                                    ],
                                   ),
                                   const SizedBox(
-                                    height: 10,
+                                    height: 24,
                                   ),
-                                  Card(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text(
-                                                'Lịch trình',
-                                                style: TextStyle(fontWeight: FontWeight.bold),
-                                              ),
-                                              ElevatedButton(
-                                                onPressed: () => Get.dialog(AddPlanNodeDialog(nodeId: e.value.id)),
-                                                style: ElevatedButton.styleFrom(
-                                                  shape: const CircleBorder(),
-                                                  padding: const EdgeInsets.all(0),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.add,
-                                                  size: 18,
-                                                ),
-                                              )
-                                            ],
+                                          const Text(
+                                            'Lịch trình',
+                                            style: TextStyle(fontWeight: FontWeight.bold),
                                           ),
-                                          e.value.plans.isNotEmpty
-                                              ? Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: e.value.plans
-                                                      .map((e) => Row(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              const Padding(
-                                                                padding: EdgeInsets.only(top: 4.0),
-                                                                child: Badge(
-                                                                  smallSize: 8,
-                                                                  backgroundColor: Colors.blue,
-                                                                ),
-                                                              ),
-                                                              const SizedBox(
-                                                                width: 10,
-                                                              ),
-                                                              Row(
-                                                                children: [
-                                                                  Text(
-                                                                    '${e.time}:',
-                                                                    style: const TextStyle(fontWeight: FontWeight.w300),
-                                                                  ),
-                                                                  const SizedBox(
-                                                                    width: 10,
-                                                                  ),
-                                                                  Text(
-                                                                    e.name,
-                                                                  )
-                                                                ],
-                                                              ),
-                                                            ],
-                                                          ))
-                                                      .toList(),
-                                                )
-                                              : const DataPlaceholder(
-                                                  text: 'Chưa có địa điểm',
-                                                ),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text(
-                                                'Chi tiêu',
-                                                style: TextStyle(fontWeight: FontWeight.bold),
-                                              ),
-                                              ElevatedButton(
-                                                onPressed: () => Get.dialog(AddSpendDialog(
-                                                  nodeId: e.value.id,
-                                                )),
-                                                style: ElevatedButton.styleFrom(
-                                                  shape: const CircleBorder(),
-                                                  padding: const EdgeInsets.all(0),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.add,
-                                                  size: 18,
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          Container(
-                                              padding: const EdgeInsets.all(16),
-                                              decoration: BoxDecoration(color: Colors.grey[100]),
-                                              child: e.value.expenses.isNotEmpty
-                                                  ? Column(
-                                                      children: [
-                                                        ...e.value.expenses
-                                                            .map((ep) => GestureDetector(
-                                                                  onLongPress: () {
-                                                                    Get.dialog(AddSpendDialog(
-                                                                      nodeId: e.value.id,
-                                                                      expense: ep,
-                                                                    ));
-                                                                  },
-                                                                  child: Container(
-                                                                    decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey[300]!))),
-                                                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                                                    child: Row(
-                                                                      children: [
-                                                                        UserAvatar(uid: ep.userId),
-                                                                        const SizedBox(
-                                                                          width: 10,
-                                                                        ),
-                                                                        Expanded(
-                                                                          child: Column(
-                                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                                            children: [
-                                                                              Text(
-                                                                                ep.time,
-                                                                                style: const TextStyle(
-                                                                                  fontSize: 12,
-                                                                                  fontStyle: FontStyle.italic,
-                                                                                  fontWeight: FontWeight.w300,
-                                                                                ),
-                                                                              ),
-                                                                              const SizedBox(
-                                                                                height: 6,
-                                                                              ),
-                                                                              Row(
-                                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                children: [
-                                                                                  Text(
-                                                                                    ep.name,
-                                                                                  ),
-                                                                                  Text(
-                                                                                    formatCurrency.format(ep.value),
-                                                                                    style: const TextStyle(fontSize: 12),
-                                                                                  ),
-                                                                                ],
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ))
-                                                            .toList(),
-                                                        Padding(
-                                                          padding: const EdgeInsets.only(top: 10),
-                                                          child: Row(
-                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                            children: [
-                                                              const Text(
-                                                                'Tổng',
-                                                                style: TextStyle(fontWeight: FontWeight.bold),
-                                                              ),
-                                                              Text(
-                                                                formatCurrency.format(controller.getTotalInNode(e.value.expenses)),
-                                                                style: const TextStyle(fontWeight: FontWeight.bold),
-                                                              )
-                                                            ],
-                                                          ),
-                                                        )
-                                                      ],
-                                                    )
-                                                  : const DataPlaceholder(
-                                                      text: 'Chưa có chi tiêu',
-                                                    ))
+                                          AppIconButton(
+                                            const Icon(
+                                              Icons.add,
+                                              size: 14,
+                                              color: Colors.blue,
+                                            ),
+                                            onTap: () => Get.dialog(
+                                              AddPlanNodeDialog(nodeId: e.value.id),
+                                            ),
+                                          )
                                         ],
                                       ),
-                                    ),
+                                      const SizedBox(
+                                        height: 12,
+                                      ),
+                                      e.value.plans.isNotEmpty
+                                          ? Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: e.value.plans
+                                                  .map((p) => AppExpansionPanel(
+                                                      onEdit: () => Get.dialog(AddPlanNodeDialog(
+                                                            nodeId: e.value.id,
+                                                            plan: p,
+                                                          )),
+                                                      header: Row(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Text(
+                                                            '${p.time}:',
+                                                            style: const TextStyle(
+                                                              color: Colors.blue,
+                                                            ),
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 4,
+                                                          ),
+                                                          Text(
+                                                            p.name,
+                                                            style: const TextStyle(fontWeight: FontWeight.w500),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      body: Container(
+                                                        decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
+                                                        padding: const EdgeInsets.all(12),
+                                                        margin: const EdgeInsets.only(top: 10),
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            const Text(
+                                                              'Ghi chú:',
+                                                              style: TextStyle(fontWeight: FontWeight.bold),
+                                                            ),
+                                                            const SizedBox(
+                                                              height: 12,
+                                                            ),
+                                                            p.note != null && p.note!.isNotEmpty
+                                                                ? Text(
+                                                                    p.note ?? '',
+                                                                  )
+                                                                : const DataPlaceholder(text: 'Chưa có ghi chú'),
+                                                          ],
+                                                        ),
+                                                      )))
+                                                  .toList(),
+                                            )
+                                          : const DataPlaceholder(
+                                              text: 'Chưa có địa điểm',
+                                            ),
+                                      const SizedBox(
+                                        height: 16,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Chi tiêu',
+                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                          ),
+                                          AppIconButton(
+                                            const Icon(
+                                              Icons.add,
+                                              size: 14,
+                                              color: Colors.blue,
+                                            ),
+                                            onTap: () => Get.dialog(AddSpendDialog(
+                                              nodeId: e.value.id,
+                                            )),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(
+                                        height: 16,
+                                      ),
+                                      Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
+                                          child: e.value.expenses.isNotEmpty
+                                              ? Column(
+                                                  children: [
+                                                    ...e.value.expenses
+                                                        .map(
+                                                          (ep) => buildExpenseItem(ep, e.value.id),
+                                                        )
+                                                        .toList(),
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(top: 10),
+                                                      child: Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          const Text(
+                                                            'Tổng',
+                                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                                          ),
+                                                          Text(
+                                                            formatCurrency.format(controller.getTotalInNode(e.value.expenses)),
+                                                            style: const TextStyle(fontWeight: FontWeight.bold),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    )
+                                                  ],
+                                                )
+                                              : const DataPlaceholder(
+                                                  text: 'Chưa có chi tiêu',
+                                                ))
+                                    ],
                                   ),
                                 ],
                               ),
                             ),
                           )
                           .toList(),
-                      ElevatedButton(
-                          onPressed: () async {
-                            await controller.addNode();
-                            // Get.dialog(
-                            //   AlertDialog(
-                            //     title: const Text(
-                            //       'New',
-                            //       textAlign: TextAlign.center,
-                            //     ),
-                            //     content: Form(
-                            //         key: controller.formKey,
-                            //         child: Column(
-                            //           mainAxisSize: MainAxisSize.min,
-                            //           children: [
-                            //             TextFormField(
-                            //               controller: controller.nameController,
-                            //               decoration: const InputDecoration(labelText: 'Name'),
-                            //             )
-                            //           ],
-                            //         )),
-                            //     actions: [
-                            //       Center(
-                            //         child: ElevatedButton(
-                            //           onPressed: () async {
-                            //             await controller.addNode();
-                            //             Get.back();
-                            //           },
-                            //           child: const Text('Add'),
-                            //         ),
-                            //       ),
-                            //     ],
-                            //   ),
-                            // );
-                          },
-                          child: const Icon(Icons.add)),
-                      const SizedBox(
-                        height: 16,
-                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
                             'Chi phí khác',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              padding: const EdgeInsets.all(0),
-                            ),
-                            child: const Icon(
+                          AppIconButton(
+                            const Icon(
                               Icons.add,
-                              size: 18,
+                              size: 14,
+                              color: Colors.blue,
                             ),
-                          )
+                            onTap: () => Get.dialog(const AddSpendDialog()),
+                          ),
                         ],
                       ),
-                      // ...controller.trip.value!.otherExpense.map((e) => null)
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      if (controller.trip.value!.otherExpense.isNotEmpty)
+                        ...controller.trip.value!.otherExpense.map((e) => buildExpenseItem(e)).toList()
+                      else
+                        const DataPlaceholder(
+                          text: 'Chưa có chi tiêu',
+                        )
                     ],
                   ),
                 ),
