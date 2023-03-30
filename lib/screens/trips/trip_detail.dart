@@ -161,11 +161,13 @@ class TripDetail extends GetView<TripDetailController> {
                       ])
             ],
           ),
-          body: RefreshIndicator(
-            onRefresh: () => controller.getTripById(),
-            child: Stack(
-              children: [
-                SingleChildScrollView(
+          body: Stack(
+            children: [
+              RefreshIndicator(
+                onRefresh: () async {
+                  await controller.getTripById();
+                },
+                child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.only(
                       top: 20,
@@ -415,70 +417,70 @@ class TripDetail extends GetView<TripDetailController> {
                     ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 6),
-                    decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), spreadRadius: 0, blurRadius: 6)], color: Colors.white),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Center(
-                          child: GestureDetector(
-                            onTap: () {
-                              controller.isShowDetail.value = !controller.isShowDetail.value;
-                            },
-                            child: const Icon(Icons.more_horiz),
-                          ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 6),
+                  decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), spreadRadius: 0, blurRadius: 6)], color: Colors.white),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            controller.isShowDetail.value = !controller.isShowDetail.value;
+                          },
+                          child: const Icon(Icons.more_horiz),
                         ),
-                        Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Tổng',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  formatCurrency.format(controller.getTotal()),
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                )
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 4,
-                            ),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Text(
-                                '${formatCurrency.format(controller.eachMember())} / người',
-                                style: const TextStyle(fontSize: 12),
+                      ),
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Tổng',
+                                style: TextStyle(fontWeight: FontWeight.bold),
                               ),
+                              Text(
+                                formatCurrency.format(controller.getTotal()),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              )
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 4,
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              '${formatCurrency.format(controller.eachMember())} / người',
+                              style: const TextStyle(fontSize: 12),
                             ),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            Obx(
-                              () => controller.isShowDetail.value
-                                  ? Container(
-                                      padding: const EdgeInsets.all(10),
-                                      margin: const EdgeInsets.only(bottom: 16),
-                                      decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(4)),
-                                      child: Column(
-                                        children: controller.members.map((m) => buildExpenseDetailForMember(m.uid)).toList(),
-                                      ),
-                                    )
-                                  : const SizedBox.shrink(),
-                            )
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
+                          const SizedBox(
+                            height: 16,
+                          ),
+                          Obx(
+                            () => controller.isShowDetail.value
+                                ? Container(
+                                    padding: const EdgeInsets.all(10),
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(4)),
+                                    child: Column(
+                                      children: controller.members.map((m) => buildExpenseDetailForMember(m.uid)).toList(),
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          )
+                        ],
+                      ),
+                    ],
                   ),
-                )
-              ],
-            ),
+                ),
+              )
+            ],
           ),
         );
       }

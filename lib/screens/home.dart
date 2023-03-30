@@ -26,64 +26,72 @@ class Home extends GetView<HomeController> {
         }),
         child: const Icon(Icons.add),
       ),
-      body: RefreshIndicator(
-        onRefresh: () => controller.getTrips(),
-        child: SafeArea(
-            child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Obx(
-            () => controller.trips.isNotEmpty
-                ? Column(
-                    children: controller.trips
-                        .map((e) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: GestureDetector(
-                                onLongPress: () {
-                                  Get.dialog(
-                                    AlertDialog(
-                                      title: const Text(
-                                        'Xoá chuyến đi này?',
-                                        style: TextStyle(fontSize: 14),
-                                      ),
-                                      actionsAlignment: MainAxisAlignment.center,
-                                      actions: [
-                                        ElevatedButton(
-                                          onPressed: () async {
-                                            await controller.deleteTrip(e.id);
-                                            Get.back();
-                                            controller.getTrips();
+      body: SafeArea(
+          child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Obx(
+          () => controller.trips.isNotEmpty
+              ? Stack(
+                  children: [
+                    RefreshIndicator(
+                      onRefresh: () async {
+                        await controller.getTrips();
+                      },
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: controller.trips
+                              .map((e) => Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 4),
+                                    child: GestureDetector(
+                                      onLongPress: () {
+                                        Get.dialog(
+                                          AlertDialog(
+                                            title: const Text(
+                                              'Xoá chuyến đi này?',
+                                              style: TextStyle(fontSize: 14),
+                                            ),
+                                            actionsAlignment: MainAxisAlignment.center,
+                                            actions: [
+                                              ElevatedButton(
+                                                onPressed: () async {
+                                                  await controller.deleteTrip(e.id);
+                                                  Get.back();
+                                                  controller.getTrips();
+                                                },
+                                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                                child: const Text('Xoá'),
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      child: Card(
+                                        child: ListTile(
+                                          onTap: () {
+                                            Get.toNamed(
+                                              '${AppRoutes.trips}/${e.id}',
+                                            );
                                           },
-                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                          child: const Text('Xoá'),
-                                        )
-                                      ],
+                                          trailing: Text(e.startDate),
+                                          title: Text(
+                                            e.name,
+                                          ),
+                                          subtitle: Text('${e.memberIds.length} members'),
+                                        ),
+                                      ),
                                     ),
-                                  );
-                                },
-                                child: Card(
-                                  child: ListTile(
-                                    onTap: () {
-                                      Get.toNamed(
-                                        '${AppRoutes.trips}/${e.id}',
-                                      );
-                                    },
-                                    trailing: Text(e.startDate),
-                                    title: Text(
-                                      e.name,
-                                    ),
-                                    subtitle: Text('${e.memberIds.length} members'),
-                                  ),
-                                ),
-                              ),
-                            ))
-                        .toList(),
-                  )
-                : const Center(
-                    child: DataPlaceholder(text: 'Chưa có hành trình'),
-                  ),
-          ),
-        )),
-      ),
+                                  ))
+                              .toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : const Center(
+                  child: DataPlaceholder(text: 'Chưa có hành trình'),
+                ),
+        ),
+      )),
     );
   }
 }

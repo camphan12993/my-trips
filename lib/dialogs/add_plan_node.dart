@@ -88,7 +88,7 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
                     );
                     if (pickedTime != null) {
                       setState(() {
-                        _timeController.text = '${pickedTime.hour}:${pickedTime.minute}';
+                        _timeController.text = '${pickedTime.hour < 12 ? '0' : ''}${pickedTime.hour}:${pickedTime.minute}';
                       });
                     }
                   } catch (e) {
