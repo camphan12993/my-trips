@@ -94,6 +94,11 @@ class TripDetailController extends GetxController {
     return result;
   }
 
+  int eachMember() {
+    var total = getTotal();
+    return (total / members.length).round();
+  }
+
   double getTotalOfMember(String id) {
     double result = 0;
     for (var node in tripNodes) {

@@ -10,6 +10,7 @@ class TripSettings extends GetView<TripSettingController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Thông tin'),
       ),
       body: Padding(

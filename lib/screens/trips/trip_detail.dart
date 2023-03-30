@@ -130,6 +130,7 @@ class TripDetail extends GetView<TripDetailController> {
           backgroundColor: Colors.white,
           appBar: AppBar(
             title: Text(controller.trip.value!.name),
+            centerTitle: true,
             actions: [
               PopupMenuButton(
                   onSelected: (value) async {
@@ -160,311 +161,318 @@ class TripDetail extends GetView<TripDetailController> {
                       ])
             ],
           ),
-          body: Stack(
-            children: [
-              SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: 20,
-                    left: 16,
-                    right: 16,
-                    bottom: 80,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ...controller.tripNodes
-                          .asMap()
-                          .entries
-                          .map(
-                            (e) => Container(
-                              margin: const EdgeInsets.only(
-                                bottom: 20,
-                              ),
-                              padding: const EdgeInsets.only(bottom: 20),
-                              decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey[300]!))),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        'Ngày ${e.key + 1}',
-                                        style: const TextStyle(
-                                          color: Colors.blue,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: 32,
-                                        child: PopupMenuButton(
-                                            icon: const Icon(Icons.more_vert),
-                                            onSelected: (value) {
-                                              if (value == 1) {
-                                                Get.dialog(
-                                                  AlertDialog(
-                                                    title: const Text(
-                                                      'Xoá ngày này?',
-                                                      style: TextStyle(fontSize: 14),
-                                                    ),
-                                                    actionsAlignment: MainAxisAlignment.center,
-                                                    actions: [
-                                                      ElevatedButton(
-                                                        onPressed: () async {
-                                                          await controller.deleteNode(e.value.id);
-                                                          Get.back();
-                                                          controller.getTripNodes();
-                                                        },
-                                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                                        child: const Text('Xoá'),
-                                                      )
-                                                    ],
-                                                  ),
-                                                );
-                                              }
-                                            },
-                                            itemBuilder: (context) => [
-                                                  PopupMenuItem(
-                                                      value: 1,
-                                                      child: Text(
-                                                        'Xoá',
-                                                        style: TextStyle(color: Colors.red),
-                                                      ))
-                                                ]),
-                                      )
-                                    ],
-                                  ),
-                                  const SizedBox(
-                                    height: 24,
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Text(
-                                            'Lịch trình',
-                                            style: TextStyle(fontWeight: FontWeight.bold),
+          body: RefreshIndicator(
+            onRefresh: () => controller.getTripById(),
+            child: Stack(
+              children: [
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      top: 20,
+                      left: 16,
+                      right: 16,
+                      bottom: 80,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ...controller.tripNodes
+                            .asMap()
+                            .entries
+                            .map(
+                              (e) => Container(
+                                margin: const EdgeInsets.only(
+                                  bottom: 20,
+                                ),
+                                padding: const EdgeInsets.only(bottom: 20),
+                                decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey[300]!))),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Ngày ${e.key + 1}',
+                                          style: const TextStyle(
+                                            color: Colors.blue,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          AppIconButton(
-                                            const Icon(
-                                              Icons.add,
-                                              size: 14,
-                                              color: Colors.blue,
-                                            ),
-                                            onTap: () => Get.dialog(
-                                              AddPlanNodeDialog(nodeId: e.value.id),
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                      const SizedBox(
-                                        height: 12,
-                                      ),
-                                      e.value.plans.isNotEmpty
-                                          ? Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: e.value.plans
-                                                  .map((p) => AppExpansionPanel(
-                                                      onEdit: () => Get.dialog(AddPlanNodeDialog(
-                                                            nodeId: e.value.id,
-                                                            plan: p,
-                                                          )),
-                                                      header: Row(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Text(
-                                                            '${p.time}:',
-                                                            style: const TextStyle(
-                                                              color: Colors.blue,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 4,
-                                                          ),
-                                                          Text(
-                                                            p.name,
-                                                            style: const TextStyle(fontWeight: FontWeight.w500),
-                                                          ),
-                                                        ],
+                                        ),
+                                        SizedBox(
+                                          width: 32,
+                                          child: PopupMenuButton(
+                                              icon: const Icon(Icons.more_vert),
+                                              onSelected: (value) {
+                                                if (value == 1) {
+                                                  Get.dialog(
+                                                    AlertDialog(
+                                                      title: const Text(
+                                                        'Xoá ngày này?',
+                                                        style: TextStyle(fontSize: 14),
                                                       ),
-                                                      body: Container(
-                                                        decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
-                                                        padding: const EdgeInsets.all(12),
-                                                        margin: const EdgeInsets.only(top: 10),
-                                                        child: Column(
+                                                      actionsAlignment: MainAxisAlignment.center,
+                                                      actions: [
+                                                        ElevatedButton(
+                                                          onPressed: () async {
+                                                            await controller.deleteNode(e.value.id);
+                                                            Get.back();
+                                                            controller.getTripNodes();
+                                                          },
+                                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                                          child: const Text('Xoá'),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                              itemBuilder: (context) => [
+                                                    PopupMenuItem(
+                                                        value: 1,
+                                                        child: Text(
+                                                          'Xoá',
+                                                          style: TextStyle(color: Colors.red),
+                                                        ))
+                                                  ]),
+                                        )
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                      height: 24,
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text(
+                                              'Lịch trình',
+                                              style: TextStyle(fontWeight: FontWeight.bold),
+                                            ),
+                                            AppIconButton(
+                                              const Icon(
+                                                Icons.add,
+                                                size: 14,
+                                                color: Colors.blue,
+                                              ),
+                                              onTap: () => Get.dialog(
+                                                AddPlanNodeDialog(nodeId: e.value.id),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: 12,
+                                        ),
+                                        e.value.plans.isNotEmpty
+                                            ? Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: e.value.plans
+                                                    .map((p) => AppExpansionPanel(
+                                                        onEdit: () => Get.dialog(AddPlanNodeDialog(
+                                                              nodeId: e.value.id,
+                                                              plan: p,
+                                                            )),
+                                                        header: Row(
                                                           crossAxisAlignment: CrossAxisAlignment.start,
                                                           children: [
-                                                            const Text(
-                                                              'Ghi chú:',
-                                                              style: TextStyle(fontWeight: FontWeight.bold),
+                                                            Text(
+                                                              '${p.time}:',
+                                                              style: const TextStyle(
+                                                                color: Colors.blue,
+                                                              ),
                                                             ),
                                                             const SizedBox(
-                                                              height: 12,
+                                                              width: 4,
                                                             ),
-                                                            p.note != null && p.note!.isNotEmpty
-                                                                ? Text(
-                                                                    p.note ?? '',
-                                                                  )
-                                                                : const DataPlaceholder(text: 'Chưa có ghi chú'),
+                                                            Text(
+                                                              p.name,
+                                                              style: const TextStyle(fontWeight: FontWeight.w500),
+                                                            ),
                                                           ],
                                                         ),
-                                                      )))
-                                                  .toList(),
-                                            )
-                                          : const DataPlaceholder(
-                                              text: 'Chưa có địa điểm',
-                                            ),
-                                      const SizedBox(
-                                        height: 16,
-                                      ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Text(
-                                            'Chi tiêu',
-                                            style: TextStyle(fontWeight: FontWeight.bold),
-                                          ),
-                                          AppIconButton(
-                                            const Icon(
-                                              Icons.add,
-                                              size: 14,
-                                              color: Colors.blue,
-                                            ),
-                                            onTap: () => Get.dialog(AddSpendDialog(
-                                              nodeId: e.value.id,
-                                            )),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(
-                                        height: 16,
-                                      ),
-                                      Container(
-                                          padding: const EdgeInsets.all(16),
-                                          decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
-                                          child: e.value.expenses.isNotEmpty
-                                              ? Column(
-                                                  children: [
-                                                    ...e.value.expenses
-                                                        .map(
-                                                          (ep) => buildExpenseItem(ep, e.value.id),
-                                                        )
-                                                        .toList(),
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(top: 10),
-                                                      child: Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                        children: [
-                                                          const Text(
-                                                            'Tổng',
-                                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                                        body: Container(
+                                                          decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
+                                                          padding: const EdgeInsets.all(12),
+                                                          margin: const EdgeInsets.only(top: 10),
+                                                          child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              const Text(
+                                                                'Ghi chú:',
+                                                                style: TextStyle(fontWeight: FontWeight.bold),
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 12,
+                                                              ),
+                                                              p.note != null && p.note!.isNotEmpty
+                                                                  ? Text(
+                                                                      p.note ?? '',
+                                                                    )
+                                                                  : const DataPlaceholder(text: 'Chưa có ghi chú'),
+                                                            ],
                                                           ),
-                                                          Text(
-                                                            formatCurrency.format(controller.getTotalInNode(e.value.expenses)),
-                                                            style: const TextStyle(fontWeight: FontWeight.bold),
+                                                        )))
+                                                    .toList(),
+                                              )
+                                            : const DataPlaceholder(
+                                                text: 'Chưa có địa điểm',
+                                              ),
+                                        const SizedBox(
+                                          height: 16,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text(
+                                              'Chi tiêu',
+                                              style: TextStyle(fontWeight: FontWeight.bold),
+                                            ),
+                                            AppIconButton(
+                                              const Icon(
+                                                Icons.add,
+                                                size: 14,
+                                                color: Colors.blue,
+                                              ),
+                                              onTap: () => Get.dialog(AddSpendDialog(
+                                                nodeId: e.value.id,
+                                              )),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: 16,
+                                        ),
+                                        Container(
+                                            padding: const EdgeInsets.all(16),
+                                            decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
+                                            child: e.value.expenses.isNotEmpty
+                                                ? Column(
+                                                    children: [
+                                                      ...e.value.expenses
+                                                          .map(
+                                                            (ep) => buildExpenseItem(ep, e.value.id),
                                                           )
-                                                        ],
-                                                      ),
-                                                    )
-                                                  ],
-                                                )
-                                              : const DataPlaceholder(
-                                                  text: 'Chưa có chi tiêu',
-                                                ))
-                                    ],
+                                                          .toList(),
+                                                      Padding(
+                                                        padding: const EdgeInsets.only(top: 10),
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          children: [
+                                                            const Text(
+                                                              'Tổng',
+                                                              style: TextStyle(fontWeight: FontWeight.bold),
+                                                            ),
+                                                            Text(
+                                                              formatCurrency.format(controller.getTotalInNode(e.value.expenses)),
+                                                              style: const TextStyle(fontWeight: FontWeight.bold),
+                                                            )
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  )
+                                                : const DataPlaceholder(
+                                                    text: 'Chưa có chi tiêu',
+                                                  ))
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Chi phí khác',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            AppIconButton(
+                              const Icon(
+                                Icons.add,
+                                size: 14,
+                                color: Colors.blue,
+                              ),
+                              onTap: () => Get.dialog(const AddSpendDialog()),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 12,
+                        ),
+                        if (controller.trip.value!.otherExpense.isNotEmpty)
+                          ...controller.trip.value!.otherExpense.map((e) => buildExpenseItem(e)).toList()
+                        else
+                          const DataPlaceholder(
+                            text: 'Chưa có chi tiêu',
+                          )
+                      ],
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 6),
+                    decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), spreadRadius: 0, blurRadius: 6)], color: Colors.white),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Center(
+                          child: GestureDetector(
+                            onTap: () {
+                              controller.isShowDetail.value = !controller.isShowDetail.value;
+                            },
+                            child: const Icon(Icons.more_horiz),
+                          ),
+                        ),
+                        Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Tổng',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
                                   ),
+                                  Text(
+                                    formatCurrency.format(controller.getTotal()),
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  )
                                 ],
                               ),
                             ),
-                          )
-                          .toList(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Chi phí khác',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          AppIconButton(
-                            const Icon(
-                              Icons.add,
-                              size: 14,
-                              color: Colors.blue,
+                            Text(
+                              '${controller.eachMember()}',
+                              textAlign: TextAlign.right,
                             ),
-                            onTap: () => Get.dialog(const AddSpendDialog()),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      if (controller.trip.value!.otherExpense.isNotEmpty)
-                        ...controller.trip.value!.otherExpense.map((e) => buildExpenseItem(e)).toList()
-                      else
-                        const DataPlaceholder(
-                          text: 'Chưa có chi tiêu',
-                        )
-                    ],
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 6),
-                  decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), spreadRadius: 0, blurRadius: 6)], color: Colors.white),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Center(
-                        child: GestureDetector(
-                          onTap: () {
-                            controller.isShowDetail.value = !controller.isShowDetail.value;
-                          },
-                          child: const Icon(Icons.more_horiz),
+                            Obx(
+                              () => controller.isShowDetail.value
+                                  ? Container(
+                                      padding: const EdgeInsets.all(10),
+                                      margin: const EdgeInsets.only(bottom: 16),
+                                      decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(4)),
+                                      child: Column(
+                                        children: controller.members.map((m) => buildExpenseDetailForMember(m.uid)).toList(),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
+                            )
+                          ],
                         ),
-                      ),
-                      Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Tổng',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  formatCurrency.format(controller.getTotal()),
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                )
-                              ],
-                            ),
-                          ),
-                          Obx(
-                            () => controller.isShowDetail.value
-                                ? Container(
-                                    padding: const EdgeInsets.all(10),
-                                    margin: const EdgeInsets.only(bottom: 16),
-                                    decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(4)),
-                                    child: Column(
-                                      children: controller.members.map((m) => buildExpenseDetailForMember(m.uid)).toList(),
-                                    ),
-                                  )
-                                : const SizedBox.shrink(),
-                          )
-                        ],
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           ),
         );
       }

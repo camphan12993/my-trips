@@ -9,6 +9,7 @@ class UserProfile extends GetView<UserProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Thông tin cá nhân'),
         actions: [
           IconButton(

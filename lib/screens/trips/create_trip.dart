@@ -14,6 +14,7 @@ class CreateTrip extends GetView<CreateTripController> {
     return Obx(
       () => Scaffold(
         appBar: AppBar(
+          centerTitle: true,
           title: Text(controller.trip != null ? 'Thông tin chuyến đi' : 'Tạo chuyến đi'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),

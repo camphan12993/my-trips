@@ -11,6 +11,7 @@ class Home extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Danh sách chuyến đi'),
         actions: [
           IconButton(
@@ -25,61 +26,64 @@ class Home extends GetView<HomeController> {
         }),
         child: const Icon(Icons.add),
       ),
-      body: SafeArea(
-          child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Obx(
-          () => controller.trips.isNotEmpty
-              ? Column(
-                  children: controller.trips
-                      .map((e) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: GestureDetector(
-                              onLongPress: () {
-                                Get.dialog(
-                                  AlertDialog(
-                                    title: const Text(
-                                      'Xoá chuyến đi này?',
-                                      style: TextStyle(fontSize: 14),
+      body: RefreshIndicator(
+        onRefresh: () => controller.getTrips(),
+        child: SafeArea(
+            child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Obx(
+            () => controller.trips.isNotEmpty
+                ? Column(
+                    children: controller.trips
+                        .map((e) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: GestureDetector(
+                                onLongPress: () {
+                                  Get.dialog(
+                                    AlertDialog(
+                                      title: const Text(
+                                        'Xoá chuyến đi này?',
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                      actionsAlignment: MainAxisAlignment.center,
+                                      actions: [
+                                        ElevatedButton(
+                                          onPressed: () async {
+                                            await controller.deleteTrip(e.id);
+                                            Get.back();
+                                            controller.getTrips();
+                                          },
+                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                          child: const Text('Xoá'),
+                                        )
+                                      ],
                                     ),
-                                    actionsAlignment: MainAxisAlignment.center,
-                                    actions: [
-                                      ElevatedButton(
-                                        onPressed: () async {
-                                          await controller.deleteTrip(e.id);
-                                          Get.back();
-                                          controller.getTrips();
-                                        },
-                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                        child: const Text('Xoá'),
-                                      )
-                                    ],
+                                  );
+                                },
+                                child: Card(
+                                  child: ListTile(
+                                    onTap: () {
+                                      Get.toNamed(
+                                        '${AppRoutes.trips}/${e.id}',
+                                      );
+                                    },
+                                    trailing: Text(e.startDate),
+                                    title: Text(
+                                      e.name,
+                                    ),
+                                    subtitle: Text('${e.memberIds.length} members'),
                                   ),
-                                );
-                              },
-                              child: Card(
-                                child: ListTile(
-                                  onTap: () {
-                                    Get.toNamed(
-                                      '${AppRoutes.trips}/${e.id}',
-                                    );
-                                  },
-                                  trailing: Text(e.startDate),
-                                  title: Text(
-                                    e.name,
-                                  ),
-                                  subtitle: Text('${e.memberIds.length} members'),
                                 ),
                               ),
-                            ),
-                          ))
-                      .toList(),
-                )
-              : const Center(
-                  child: DataPlaceholder(text: 'Chưa có hành trình'),
-                ),
-        ),
-      )),
+                            ))
+                        .toList(),
+                  )
+                : const Center(
+                    child: DataPlaceholder(text: 'Chưa có hành trình'),
+                  ),
+          ),
+        )),
+      ),
     );
   }
 }
