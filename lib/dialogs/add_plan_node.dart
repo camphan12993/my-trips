@@ -72,17 +72,31 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
                 },
                 decoration: const InputDecoration(labelText: 'Thời gian', suffixIcon: Icon(Icons.timer_outlined)),
                 onTap: () async {
-                  TimeOfDay? initTime;
-                  if (_timeController.text.isNotEmpty) {
-                    initTime = TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(_timeController.text));
-                  }
-                  TimeOfDay? pickedTime = await showTimePicker(context: context, initialTime: initTime ?? TimeOfDay.now());
-                  if (pickedTime != null) {
-                    DateTime parsedTime = DateFormat.jm().parse(pickedTime.format(context).toString());
-                    String formattedTime = DateFormat('HH:mm').format(parsedTime);
-                    setState(() {
-                      _timeController.text = formattedTime;
-                    });
+                  try {
+                    TimeOfDay? initTime;
+                    if (_timeController.text.isNotEmpty) {
+                      initTime = TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(_timeController.text));
+                    }
+                    TimeOfDay? pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: initTime ?? TimeOfDay.now(),
+                      initialEntryMode: TimePickerEntryMode.input,
+                      builder: (context, child) => MediaQuery(
+                        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+                        child: child!,
+                      ),
+                    );
+                    if (pickedTime != null) {
+                      setState(() {
+                        _timeController.text = '${pickedTime.hour}:${pickedTime.minute}';
+                      });
+                    }
+                  } catch (e) {
+                    final snackBar = SnackBar(
+                      content: Text(e.toString()),
+                      backgroundColor: Colors.red,
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   }
                 },
               ),

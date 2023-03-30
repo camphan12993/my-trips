@@ -229,7 +229,7 @@ class TripDetail extends GetView<TripDetailController> {
                                                 }
                                               },
                                               itemBuilder: (context) => [
-                                                    PopupMenuItem(
+                                                    const PopupMenuItem(
                                                         value: 1,
                                                         child: Text(
                                                           'Xoá',
@@ -306,7 +306,7 @@ class TripDetail extends GetView<TripDetailController> {
                                                                 style: TextStyle(fontWeight: FontWeight.bold),
                                                               ),
                                                               const SizedBox(
-                                                                height: 12,
+                                                                height: 6,
                                                               ),
                                                               p.note != null && p.note!.isNotEmpty
                                                                   ? Text(
@@ -433,25 +433,31 @@ class TripDetail extends GetView<TripDetailController> {
                         ),
                         Column(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    'Tổng',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    formatCurrency.format(controller.getTotal()),
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
-                                  )
-                                ],
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Tổng',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  formatCurrency.format(controller.getTotal()),
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 4,
+                            ),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                '${formatCurrency.format(controller.eachMember())} / người',
+                                style: const TextStyle(fontSize: 12),
                               ),
                             ),
-                            Text(
-                              '${controller.eachMember()}',
-                              textAlign: TextAlign.right,
+                            const SizedBox(
+                              height: 16,
                             ),
                             Obx(
                               () => controller.isShowDetail.value
