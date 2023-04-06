@@ -17,6 +17,7 @@ class TripDetailController extends GetxController {
   String? id;
   Rxn<Trip> trip = Rxn<Trip>();
   RxList<TripNode> tripNodes = RxList([]);
+  RxList<TripNode> displayedTripNodes = RxList([]);
   final TripService _tripService = TripService();
   final UserService _userService = UserService();
   final formKey = GlobalKey<FormState>();
@@ -25,6 +26,8 @@ class TripDetailController extends GetxController {
   RxList<AppUser> users = RxList([]);
   RxBool isShowDetail = RxBool(false);
   RxBool isLoading = RxBool(false);
+  var selectedDate = -1.obs;
+  var selectedTab = 0.obs;
 
   @override
   Future<void> onInit() async {
@@ -46,6 +49,16 @@ class TripDetailController extends GetxController {
     }
   }
 
+  void onSelectDate(int value) {
+    displayedTripNodes.clear();
+    selectedDate = value;
+    if (value == -1) {
+      displayedTripNodes.addAll(tripNodes);
+    } else {
+      displayedTripNodes.add(tripNodes[value]);
+    }
+  }
+
   AppUser getMember(String id) {
     return members.firstWhere((m) => m.uid == id);
   }
@@ -60,6 +73,7 @@ class TripDetailController extends GetxController {
     var result = await _tripService.getListNodes(tripId: id!);
     tripNodes.clear();
     tripNodes.addAll(result);
+    onSelectDate(selectedDate);
   }
 
   Future<void> addNode() async {
