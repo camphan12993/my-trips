@@ -172,12 +172,9 @@ class TripDetail extends GetView<TripDetailController> {
   }
 
   Widget buildTripPlanList() {
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: controller.tripNodes.asMap().entries.map((e) => buildPlanItem(e.value, e.key)).toList(),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: controller.tripNodes.asMap().entries.map((e) => buildPlanItem(e.value, e.key)).toList(),
     );
   }
 
@@ -249,9 +246,44 @@ class TripDetail extends GetView<TripDetailController> {
           ),
         ],
       ),
-      child: Text(
-        'Ngày ${index + 1}',
-        style: TextStyle(fontWeight: FontWeight.w500, color: AppColors.primary),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Ngày ${index + 1}',
+            style: TextStyle(fontWeight: FontWeight.w500, color: AppColors.primary),
+          ),
+          if (!controller.editMode.value)
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(0, 0, 0, 0.1),
+                    blurRadius: 10,
+                    spreadRadius: -4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.add,
+                color: Colors.white,
+              ),
+            ),
+          if (controller.editMode.value)
+            const SizedBox(
+              width: 26,
+              height: 26,
+              child: Icon(
+                Icons.delete,
+                color: Colors.red,
+              ),
+            )
+        ],
       ),
     );
   }
@@ -265,6 +297,60 @@ class TripDetail extends GetView<TripDetailController> {
     }
   }
 
+  buildListDay() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: controller.tripNodes
+            .asMap()
+            .entries
+            .map((e) => GestureDetector(
+                  onTap: () {
+                    controller.selectedDay.value = e.key;
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+                    decoration: BoxDecoration(
+                      color: controller.selectedDay.value == e.key ? Colors.grey[200] : null,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Ngày',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: controller.currentDay.value == e.key
+                                  ? AppColors.primary
+                                  : controller.selectedDay.value == e.key
+                                      ? Colors.black
+                                      : Colors.grey[500]),
+                        ),
+                        const SizedBox(
+                          width: 4,
+                        ),
+                        Text(
+                          '${e.key + 1}',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 18,
+                              color: controller.currentDay.value == e.key
+                                  ? AppColors.primary
+                                  : controller.selectedDay.value == e.key
+                                      ? Colors.black
+                                      : Colors.grey[500]),
+                        )
+                      ],
+                    ),
+                  ),
+                ))
+            .toList(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -274,69 +360,85 @@ class TripDetail extends GetView<TripDetailController> {
         );
       } else if (controller.trip.value != null) {
         return Scaffold(
-            backgroundColor: AppColors.background,
-            appBar: AppBar(
-              titleTextStyle: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),
-              iconTheme: const IconThemeData(color: Colors.black),
-              title: Text(
-                controller.trip.value!.name,
+            backgroundColor: AppColors.primary,
+            appBar: PreferredSize(
+              preferredSize: const Size.fromHeight(60),
+              child: AppBar(
+                titleTextStyle: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: Text(
+                  controller.trip.value!.name,
+                ),
+                automaticallyImplyLeading: false,
+                leading: controller.editMode.value
+                    ? InkWell(
+                        onTap: () {
+                          controller.editMode.value = false;
+                        },
+                        child: const Icon(Icons.close))
+                    : const Icon(Icons.arrow_back),
+                elevation: 0,
+                centerTitle: true,
+                backgroundColor: AppColors.primary,
+                actions: [
+                  if (!controller.editMode.value)
+                    PopupMenuButton(
+                        icon: const Icon(Icons.more_vert),
+                        onSelected: (value) async {
+                          if (value == 0) {
+                            controller.editMode.value = true;
+                          } else if (value == 1) {
+                            Get.toNamed(
+                              '${AppRoutes.trips}/${controller.id}/settings',
+                              arguments: {
+                                'trip': controller.trip.value,
+                              },
+                            )!
+                                .then((value) {
+                              controller.getTripById();
+                            });
+                          } else if (value == 2) {
+                            await controller.addNode();
+                          }
+                        },
+                        itemBuilder: (context) => const [
+                              PopupMenuItem(
+                                value: 0,
+                                child: Text('Sửa'),
+                              ),
+                              PopupMenuItem(
+                                value: 1,
+                                child: Text('Cài đặt'),
+                              ),
+                              PopupMenuItem(
+                                value: 2,
+                                child: Text('Thêm ngày'),
+                              ),
+                            ])
+                ],
               ),
-              automaticallyImplyLeading: false,
-              leading: const Icon(Icons.arrow_back),
-              elevation: 0,
-              centerTitle: true,
-              backgroundColor: AppColors.background,
-              actions: [
-                PopupMenuButton(
-                    icon: const Icon(Icons.more_vert),
-                    onSelected: (value) async {
-                      if (value == 0) {
-                        Get.toNamed(
-                          '${AppRoutes.trips}/${controller.id}/settings',
-                          arguments: {
-                            'trip': controller.trip.value,
-                          },
-                        )!
-                            .then((value) {
-                          controller.getTripById();
-                        });
-                      }
-                      if (value == 1) {
-                        await controller.addNode();
-                      }
-                    },
-                    itemBuilder: (context) => const [
-                          PopupMenuItem(
-                            value: 0,
-                            child: Text('Cài đặt'),
-                          ),
-                          PopupMenuItem(
-                            value: 1,
-                            child: Text('Thêm ngày'),
-                          ),
-                        ])
-              ],
             ),
-            body: Column(
-              children: [
-                const SizedBox(
-                  height: 16,
+            body: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.horizontal(
+                  left: Radius.circular(20),
+                  right: Radius.circular(20),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    buildTabItem('Lịch Trình', 0, Icons.train),
-                    buildTabItem('Chi Phí', 1, Icons.payments),
-                    buildTabItem('Thành viên', 2, Icons.people),
-                  ],
-                ),
-                Expanded(
-                    child: SingleChildScrollView(
-                        child: Padding(
-                  child: buildTab(),
-                  padding: const EdgeInsets.all(16),
-                )))
-              ],
+              ),
+              padding: const EdgeInsets.only(top: 18, left: 16, right: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  buildListDay(),
+                  Expanded(
+                      child: SingleChildScrollView(
+                          child: Padding(
+                    child: buildTab(),
+                    padding: const EdgeInsets.all(16),
+                  )))
+                ],
+              ),
             ));
       }
       return const Scaffold(

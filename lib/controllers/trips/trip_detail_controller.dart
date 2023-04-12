@@ -28,6 +28,9 @@ class TripDetailController extends GetxController {
   RxBool isLoading = RxBool(false);
   var selectedDate = -1.obs;
   var selectedTab = 0.obs;
+  var editMode = false.obs;
+  var selectedDay = 1.obs;
+  var currentDay = 2.obs;
 
   @override
   Future<void> onInit() async {
