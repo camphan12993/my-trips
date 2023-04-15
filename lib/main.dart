@@ -26,7 +26,23 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'My Trips',
-      theme: ThemeData().copyWith(primaryColor: AppColors.primary),
+      theme: ThemeData(
+        elevatedButtonTheme: ElevatedButtonThemeData(style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary)),
+        inputDecorationTheme: InputDecorationTheme(
+          hintStyle: const TextStyle(fontSize: 14),
+          contentPadding: const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6.0),
+            borderSide: BorderSide(width: 1, color: Colors.grey[400]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6.0),
+            borderSide: BorderSide(width: 1, color: AppColors.primary),
+          ),
+        ),
+      ).copyWith(
+        primaryColor: AppColors.primary,
+      ),
       color: Colors.white,
       builder: EasyLoading.init(),
       getPages: AppPages.pages,

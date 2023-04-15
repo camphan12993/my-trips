@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:my_trips_app/core/app_colors.dart';
 import 'package:my_trips_app/models/plan_node.dart';
 import 'package:my_trips_app/models/trip_node.dart';
+import 'package:my_trips_app/screens/trips/widgets/expense_item.dart';
 
 import '../../../controllers/trips/trip_detail_controller.dart';
+import '../../../dialogs/add_plan_node.dart';
+import '../../../dialogs/add_spend_dialog.dart';
+import '../../../widgets/app_icon_button.dart';
+import '../../../widgets/data_placeholder.dart';
 
 class TripDayPlan extends StatelessWidget {
   final TripDetailController _controller = Get.find();
+  final formatCurrency = NumberFormat.simpleCurrency(locale: 'vi-VN', name: 'VND', decimalDigits: 0);
 
   TripDayPlan({super.key});
   buildListDay() {
@@ -70,16 +77,19 @@ class TripDayPlan extends StatelessWidget {
   }
 
   Widget buildTimeLine() {
-    TripNode currentDay = _controller.tripNodes[_controller.selectedDay.value];
-    return Column(
-      children: currentDay.plans
-          .asMap()
-          .entries
-          .map(
-            (e) => buildPlanNode(e.value, e.key == 2, e.key == currentDay.plans.length - 1),
+    return _controller.currentNode.plans.isNotEmpty
+        ? Column(
+            children: _controller.currentNode.plans
+                .asMap()
+                .entries
+                .map(
+                  (e) => buildPlanNode(e.value, e.key == 2, e.key == _controller.currentNode.plans.length - 1),
+                )
+                .toList(),
           )
-          .toList(),
-    );
+        : const DataPlaceholder(
+            text: 'Chưa có địa điểm',
+          );
   }
 
   Widget buildPlanNode(PlanNode plan, bool isCurrent, [bool isLast = false]) {
@@ -129,7 +139,7 @@ class TripDayPlan extends StatelessWidget {
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: isLast ? 0 : 20),
+                  padding: EdgeInsets.only(top: 6, bottom: isLast ? 0 : 10),
                   child: DecoratedBox(
                     decoration: const BoxDecoration(
                       boxShadow: [
@@ -139,7 +149,7 @@ class TripDayPlan extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border(right: BorderSide(color: isCurrent ? AppColors.primary : Colors.grey[400]!, width: 4)),
@@ -160,7 +170,27 @@ class TripDayPlan extends StatelessWidget {
                     ),
                   ),
                 ),
-              )
+              ),
+              if (_controller.isEditPlace.value)
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 6, top: 8),
+                    child: GestureDetector(
+                      onTap: () => Get.dialog(
+                        AddPlanNodeDialog(
+                          nodeId: _controller.currentNode.id,
+                          plan: plan,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.edit,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                )
             ],
           ),
         )
@@ -168,71 +198,150 @@ class TripDayPlan extends StatelessWidget {
     );
   }
 
+  Widget buildExpense() {
+    TripNode currentDay = _controller.tripNodes[_controller.selectedDay.value];
+
+    return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(6)),
+        child: currentDay.expenses.isNotEmpty
+            ? Column(
+                children: [
+                  ...currentDay.expenses
+                      .map(
+                        (ep) => ExpenseItem(
+                          data: ep,
+                          memberName: _controller.getMemberName(ep.userId),
+                        ),
+                      )
+                      .toList(),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Tổng',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          formatCurrency.format(_controller.getTotalInNode(currentDay.expenses)),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              )
+            : const DataPlaceholder(
+                text: 'Chưa có chi tiêu',
+              ));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        buildListDay(),
-        const SizedBox(
-          height: 24,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Địa điểm',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.primary),
-            ),
-            Container(
-              height: 32,
-              width: 32,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                color: Colors.white,
-                boxShadow: const [
-                  BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.1), spreadRadius: -2, blurRadius: 24),
+    return Obx(() {
+      return Column(
+        children: [
+          buildListDay(),
+          const SizedBox(
+            height: 24,
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Địa điểm',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.primary),
+                        ),
+                      ),
+                      if (!_controller.isEditPlace.value) ...[
+                        AppIconButton(
+                          Icon(
+                            Icons.edit,
+                            size: 18,
+                            color: AppColors.primary,
+                          ),
+                          onTap: () => _controller.isEditPlace.value = true,
+                        ),
+                        const SizedBox(
+                          width: 6,
+                        ),
+                        AppIconButton(
+                          Icon(
+                            Icons.add,
+                            color: AppColors.primary,
+                          ),
+                          onTap: () => Get.dialog(
+                            AddPlanNodeDialog(nodeId: _controller.currentNode.id),
+                          ),
+                        )
+                      ] else
+                        AppIconButton(
+                          Icon(
+                            Icons.close,
+                            size: 18,
+                            color: AppColors.textPrimary,
+                          ),
+                          onTap: () => _controller.isEditPlace.value = false,
+                        )
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  buildTimeLine(),
+                  const SizedBox(
+                    height: 24,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Chi tiêu',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.primary),
+                        ),
+                      ),
+                      AppIconButton(
+                        Icon(
+                          Icons.edit,
+                          size: 18,
+                          color: AppColors.primary,
+                        ),
+                        onTap: () => Get.dialog(
+                          AddSpendDialog(nodeId: _controller.currentNode.id),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 6,
+                      ),
+                      AppIconButton(
+                        Icon(
+                          Icons.add,
+                          color: AppColors.primary,
+                        ),
+                        onTap: () => Get.dialog(
+                          AddSpendDialog(nodeId: _controller.currentNode.id),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  buildExpense()
                 ],
               ),
-              child: Icon(
-                Icons.add,
-                color: AppColors.primary,
-              ),
-            )
-          ],
-        ),
-        const SizedBox(
-          height: 16,
-        ),
-        buildTimeLine(),
-        const SizedBox(
-          height: 24,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Chi tiêu',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.primary),
             ),
-            Container(
-              height: 32,
-              width: 32,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                color: Colors.white,
-                boxShadow: const [
-                  BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.1), spreadRadius: -2, blurRadius: 24),
-                ],
-              ),
-              child: Icon(
-                Icons.add,
-                color: AppColors.primary,
-              ),
-            )
-          ],
-        ),
-      ],
-    );
+          ),
+        ],
+      );
+    });
   }
 }

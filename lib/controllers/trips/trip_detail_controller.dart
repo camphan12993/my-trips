@@ -31,6 +31,10 @@ class TripDetailController extends GetxController {
   var bottomTabIndex = 0.obs;
   final AuthController _authController = Get.find();
 
+  // edit mode
+  var isEditPlace = false.obs;
+  var isEditExpense = false.obs;
+
   // trip settings
   final TextEditingController startDateController = TextEditingController();
   Rxn<DateTime> formSelectedDate = Rxn();
@@ -67,6 +71,8 @@ class TripDetailController extends GetxController {
     }
   }
 
+  TripNode get currentNode => tripNodes[selectedDay.value];
+
   Future<void> getUserList() async {
     var result = await _userService.getListUser();
     users.clear();
@@ -90,8 +96,12 @@ class TripDetailController extends GetxController {
     members.removeWhere((m) => m.uid == id);
   }
 
-  AppUser getMember(String id) {
+  AppUser? getMember(String id) {
     return members.firstWhere((m) => m.uid == id);
+  }
+
+  String getMemberName(String id) {
+    return getMember(id)?.name ?? '';
   }
 
   Future<void> getListMember() async {

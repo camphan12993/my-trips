@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import 'package:my_trips_app/controllers/index.dart';
+import 'package:my_trips_app/core/app_colors.dart';
 import 'package:my_trips_app/models/add_plan_node_payload.dart';
 import 'package:my_trips_app/models/plan_node.dart';
 
@@ -42,73 +43,92 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Địa điểm'),
-      content: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Tên địa điểm'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui nhập địa điểm';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              TextFormField(
-                controller: _timeController,
-                readOnly: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng chọn thời gian';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(labelText: 'Thời gian', suffixIcon: Icon(Icons.timer_outlined)),
-                onTap: () async {
-                  try {
-                    TimeOfDay? initTime;
-                    if (_timeController.text.isNotEmpty) {
-                      initTime = TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(_timeController.text));
+      title: const Text(
+        'Địa điểm',
+        textAlign: TextAlign.center,
+      ),
+      titleTextStyle: TextStyle(
+        fontSize: 16,
+        color: AppColors.primary,
+        fontWeight: FontWeight.bold,
+      ),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(hintText: 'Tên địa điểm'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui nhập địa điểm';
                     }
-                    TimeOfDay? pickedTime = await showTimePicker(
-                      context: context,
-                      initialTime: initTime ?? TimeOfDay.now(),
-                      initialEntryMode: TimePickerEntryMode.input,
-                      builder: (context, child) => MediaQuery(
-                        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
-                        child: child!,
-                      ),
-                    );
-                    if (pickedTime != null) {
-                      setState(() {
-                        _timeController.text = '${pickedTime.hour < 12 ? '0' : ''}${pickedTime.hour}:${pickedTime.minute}';
-                      });
+                    return null;
+                  },
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  controller: _timeController,
+                  readOnly: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng chọn thời gian';
                     }
-                  } catch (e) {
-                    final snackBar = SnackBar(
-                      content: Text(e.toString()),
-                      backgroundColor: Colors.red,
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  }
-                },
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              TextFormField(
-                controller: _noteController,
-                decoration: const InputDecoration(labelText: 'Ghi chú'),
-              ),
-            ],
-          )),
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                      hintText: 'Thời gian',
+                      suffixIcon: Icon(
+                        Icons.timer_outlined,
+                        size: 20,
+                        color: AppColors.primary,
+                      )),
+                  onTap: () async {
+                    try {
+                      TimeOfDay? initTime;
+                      if (_timeController.text.isNotEmpty) {
+                        initTime = TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(_timeController.text));
+                      }
+                      TimeOfDay? pickedTime = await showTimePicker(
+                        context: context,
+                        initialTime: initTime ?? TimeOfDay.now(),
+                        initialEntryMode: TimePickerEntryMode.input,
+                        builder: (context, child) => MediaQuery(
+                          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+                          child: child!,
+                        ),
+                      );
+                      if (pickedTime != null) {
+                        setState(() {
+                          _timeController.text = '${pickedTime.hour < 12 ? '0' : ''}${pickedTime.hour}:${pickedTime.minute}';
+                        });
+                      }
+                    } catch (e) {
+                      final snackBar = SnackBar(
+                        content: Text(e.toString()),
+                        backgroundColor: Colors.red,
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    }
+                  },
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  controller: _noteController,
+                  decoration: const InputDecoration(hintText: 'Ghi chú'),
+                ),
+              ],
+            )),
+      ),
       actions: [
         widget.plan == null
             ? Center(

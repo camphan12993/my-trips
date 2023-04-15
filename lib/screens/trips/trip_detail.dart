@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_trips_app/controllers/index.dart';
 import 'package:my_trips_app/core/app_colors.dart';
-import 'package:my_trips_app/dialogs/add_spend_dialog.dart';
 import 'package:intl/intl.dart';
-import 'package:my_trips_app/models/trip_expense.dart';
 import 'package:my_trips_app/models/trip_node.dart';
 import 'package:my_trips_app/screens/trips/components/trip_day_plan.dart';
 import 'package:my_trips_app/screens/trips/components/trip_total_expense.dart';
@@ -14,70 +12,6 @@ import 'components/trip_settings.dart';
 class TripDetail extends GetView<TripDetailController> {
   final formatCurrency = NumberFormat.simpleCurrency(locale: 'vi-VN', name: 'VND', decimalDigits: 0);
   TripDetail({super.key});
-
-  Widget buildExpenseItem(TripExpense data, [String? nodeId]) {
-    var member = controller.getMember(data.userId);
-    return GestureDetector(
-      onLongPress: () {
-        Get.dialog(AddSpendDialog(
-          nodeId: nodeId,
-          expense: data,
-        ));
-      },
-      child: Container(
-        decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey[300]!))),
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                // SizedBox(
-                //   width: 20,
-                //   child: Checkbox(
-                //     value: data.hasPaid,
-                //     onChanged: (value) {},
-                //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                //   ),
-                // ),
-                // const SizedBox(
-                //   width: 6,
-                // ),
-                Text(
-                  '(${member.name})',
-                  style: const TextStyle(color: Colors.blue, fontSize: 12),
-                ),
-                const SizedBox(
-                  width: 6,
-                ),
-                Text(
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                  data.name,
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                const Expanded(child: SizedBox.shrink()),
-                Text(
-                  formatCurrency.format(data.value),
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ],
-            ),
-            if (data.note.isNotEmpty) ...[
-              const SizedBox(
-                height: 6,
-              ),
-              Text(
-                '(${data.note})',
-                style: const TextStyle(fontStyle: FontStyle.italic),
-              ),
-            ]
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget buildPlanItem(TripNode node, int index) {
     return Container(
@@ -191,10 +125,18 @@ class TripDetail extends GetView<TripDetailController> {
               ),
             ),
             bottomNavigationBar: BottomNavigationBar(
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
               items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.train), label: 'Lịch trình'),
-                BottomNavigationBarItem(icon: Icon(Icons.money), label: 'Chi Phí'),
-                BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Cài đặt'),
+                BottomNavigationBarItem(icon: Icon(Icons.train), label: ''),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.money),
+                  label: '',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.settings),
+                  label: '',
+                ),
               ],
               currentIndex: controller.bottomTabIndex.value,
               onTap: (value) {
