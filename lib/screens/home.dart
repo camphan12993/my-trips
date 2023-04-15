@@ -4,23 +4,39 @@ import 'package:my_trips_app/controllers/home_controller.dart';
 import 'package:my_trips_app/core/app_routes.dart';
 import 'package:my_trips_app/widgets/data_placeholder.dart';
 
+import '../core/app_colors.dart';
+
 class Home extends GetView<HomeController> {
   const Home({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Danh sách chuyến đi'),
-        actions: [
-          IconButton(
-            onPressed: () => Get.toNamed(AppRoutes.userProfile),
-            icon: const Icon(Icons.person),
+      backgroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: AppBar(
+          title: Text(
+            'Chuyến đi',
+            style: TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w500),
           ),
-        ],
+          automaticallyImplyLeading: false,
+          elevation: 0,
+          centerTitle: false,
+          backgroundColor: Colors.white,
+          actions: [
+            IconButton(
+              onPressed: () => Get.toNamed(AppRoutes.userProfile),
+              icon: Icon(
+                Icons.person,
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primary,
         onPressed: () => Get.toNamed(AppRoutes.createTrip)!.then((value) {
           controller.getTrips();
         }),

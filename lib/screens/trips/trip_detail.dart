@@ -2,77 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_trips_app/controllers/index.dart';
 import 'package:my_trips_app/core/app_colors.dart';
-import 'package:my_trips_app/core/app_routes.dart';
-import 'package:my_trips_app/dialogs/add_plan_node.dart';
 import 'package:my_trips_app/dialogs/add_spend_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:my_trips_app/models/trip_expense.dart';
 import 'package:my_trips_app/models/trip_node.dart';
-import 'package:my_trips_app/widgets/app_icon_button.dart';
-import 'package:my_trips_app/widgets/expansion_panel.dart';
+import 'package:my_trips_app/screens/trips/components/trip_day_plan.dart';
+import 'package:my_trips_app/screens/trips/components/trip_total_expense.dart';
 
-import '../../widgets/data_placeholder.dart';
+import 'components/trip_settings.dart';
 
 class TripDetail extends GetView<TripDetailController> {
   final formatCurrency = NumberFormat.simpleCurrency(locale: 'vi-VN', name: 'VND', decimalDigits: 0);
   TripDetail({super.key});
-
-  Widget buildExpenseDetailForMember(String id) {
-    var userExpense = controller.getTotalOfMember(id);
-    var member = controller.getMember(id);
-
-    var diff = userExpense - controller.getTotal() / controller.members.length;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                member.name,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              Text(
-                formatCurrency.format(userExpense),
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 6,
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '(${diff > 0 ? "+" : ""}${formatCurrency.format(diff)})',
-              style: TextStyle(
-                color: diff >= 0 ? Colors.green : Colors.red,
-                fontSize: 12,
-              ),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget buildDateSelection() {
-    List<int> items = controller.tripNodes.asMap().entries.map((e) => e.key).toList();
-    items.insert(0, -1);
-    return DropdownButton<int>(
-        value: controller.selectedDate,
-        onChanged: (int? value) {
-          if (value != null) {
-            controller.onSelectDate(value);
-          }
-        },
-        items: items.map<DropdownMenuItem<int>>((int value) {
-          return DropdownMenuItem<int>(
-            value: value,
-            child: value == -1 ? const Text('Tất cả') : Text('Ngày ${value + 1}'),
-          );
-        }).toList());
-  }
 
   Widget buildExpenseItem(TripExpense data, [String? nodeId]) {
     var member = controller.getMember(data.userId);
@@ -138,98 +79,6 @@ class TripDetail extends GetView<TripDetailController> {
     );
   }
 
-  buildTabItem(String label, int value, IconData icon) {
-    bool isSelected = value == controller.selectedTab.value;
-    return GestureDetector(
-      onTap: () {
-        controller.selectedTab.value = value;
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: 6,
-          horizontal: 12,
-        ),
-        decoration: BoxDecoration(color: isSelected ? AppColors.primary : null, borderRadius: BorderRadius.circular(40)),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.white : AppColors.textPrimary,
-              size: 16,
-            ),
-            const SizedBox(
-              width: 6,
-            ),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: isSelected ? Colors.white : AppColors.textPrimary, fontWeight: FontWeight.w400),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildTripPlanList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: controller.tripNodes.asMap().entries.map((e) => buildPlanItem(e.value, e.key)).toList(),
-    );
-  }
-
-  Widget buildTripTotalExpense() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromRGBO(0, 0, 0, 0.09),
-            offset: Offset(0, 3),
-            blurRadius: 6,
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Tổng',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                formatCurrency.format(controller.getTotal()),
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              )
-            ],
-          ),
-          const SizedBox(
-            height: 4,
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '${formatCurrency.format(controller.eachMember())} / người',
-              style: const TextStyle(fontSize: 12),
-            ),
-          ),
-          Divider(
-            height: 28,
-            color: Colors.grey[400],
-          ),
-          Column(
-            children: controller.members.map((m) => buildExpenseDetailForMember(m.uid)).toList(),
-          )
-        ],
-      ),
-    );
-  }
-
   Widget buildPlanItem(TripNode node, int index) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -253,102 +102,42 @@ class TripDetail extends GetView<TripDetailController> {
             'Ngày ${index + 1}',
             style: TextStyle(fontWeight: FontWeight.w500, color: AppColors.primary),
           ),
-          if (!controller.editMode.value)
-            Container(
-              width: 26,
-              height: 26,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(6),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color.fromRGBO(0, 0, 0, 0.1),
-                    blurRadius: 10,
-                    spreadRadius: -4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.add,
-                color: Colors.white,
-              ),
+          Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(6),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color.fromRGBO(0, 0, 0, 0.1),
+                  blurRadius: 10,
+                  spreadRadius: -4,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
-          if (controller.editMode.value)
-            const SizedBox(
-              width: 26,
-              height: 26,
-              child: Icon(
-                Icons.delete,
-                color: Colors.red,
-              ),
-            )
+            child: const Icon(
+              Icons.add,
+              color: Colors.white,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  buildTab() {
-    switch (controller.selectedTab.value) {
+  Widget buildBody() {
+    switch (controller.bottomTabIndex.value) {
       case 0:
-        return buildTripPlanList();
+        return TripDayPlan();
       case 1:
-        return buildTripTotalExpense();
+        return TripTotalExpense();
+      case 2:
+        return TripSettings();
+      default:
+        return const SizedBox.shrink();
     }
-  }
-
-  buildListDay() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: controller.tripNodes
-            .asMap()
-            .entries
-            .map((e) => GestureDetector(
-                  onTap: () {
-                    controller.selectedDay.value = e.key;
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 6),
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
-                    decoration: BoxDecoration(
-                      color: controller.selectedDay.value == e.key ? Colors.grey[200] : null,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Ngày',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: controller.currentDay.value == e.key
-                                  ? AppColors.primary
-                                  : controller.selectedDay.value == e.key
-                                      ? Colors.black
-                                      : Colors.grey[500]),
-                        ),
-                        const SizedBox(
-                          width: 4,
-                        ),
-                        Text(
-                          '${e.key + 1}',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 18,
-                              color: controller.currentDay.value == e.key
-                                  ? AppColors.primary
-                                  : controller.selectedDay.value == e.key
-                                      ? Colors.black
-                                      : Colors.grey[500]),
-                        )
-                      ],
-                    ),
-                  ),
-                ))
-            .toList(),
-      ),
-    );
   }
 
   @override
@@ -370,75 +159,63 @@ class TripDetail extends GetView<TripDetailController> {
                   controller.trip.value!.name,
                 ),
                 automaticallyImplyLeading: false,
-                leading: controller.editMode.value
-                    ? InkWell(
-                        onTap: () {
-                          controller.editMode.value = false;
-                        },
-                        child: const Icon(Icons.close))
-                    : const Icon(Icons.arrow_back),
+                leading: GestureDetector(
+                    onTap: () {
+                      Get.back();
+                    },
+                    child: const Icon(Icons.arrow_back)),
                 elevation: 0,
                 centerTitle: true,
                 backgroundColor: AppColors.primary,
                 actions: [
-                  if (!controller.editMode.value)
-                    PopupMenuButton(
-                        icon: const Icon(Icons.more_vert),
-                        onSelected: (value) async {
-                          if (value == 0) {
-                            controller.editMode.value = true;
-                          } else if (value == 1) {
-                            Get.toNamed(
-                              '${AppRoutes.trips}/${controller.id}/settings',
-                              arguments: {
-                                'trip': controller.trip.value,
-                              },
-                            )!
-                                .then((value) {
-                              controller.getTripById();
-                            });
-                          } else if (value == 2) {
-                            await controller.addNode();
-                          }
-                        },
-                        itemBuilder: (context) => const [
-                              PopupMenuItem(
-                                value: 0,
-                                child: Text('Sửa'),
-                              ),
-                              PopupMenuItem(
-                                value: 1,
-                                child: Text('Cài đặt'),
-                              ),
-                              PopupMenuItem(
-                                value: 2,
-                                child: Text('Thêm ngày'),
-                              ),
-                            ])
+                  if (controller.bottomTabIndex.value == 0)
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 10),
+                        height: 32,
+                        width: 32,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: Colors.white,
+                          boxShadow: const [
+                            BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.2), spreadRadius: 0, blurRadius: 12),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.add,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
-            body: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.horizontal(
-                  left: Radius.circular(20),
-                  right: Radius.circular(20),
+            bottomNavigationBar: BottomNavigationBar(
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Icons.train), label: 'Lịch trình'),
+                BottomNavigationBarItem(icon: Icon(Icons.money), label: 'Chi Phí'),
+                BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Cài đặt'),
+              ],
+              currentIndex: controller.bottomTabIndex.value,
+              onTap: (value) {
+                controller.bottomTabIndex.value = value;
+              },
+            ),
+            body: Column(
+              children: [
+                Expanded(
+                  child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20),
+                        ),
+                      ),
+                      padding: const EdgeInsets.only(top: 28, left: 24, right: 24),
+                      child: buildBody()),
                 ),
-              ),
-              padding: const EdgeInsets.only(top: 18, left: 16, right: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  buildListDay(),
-                  Expanded(
-                      child: SingleChildScrollView(
-                          child: Padding(
-                    child: buildTab(),
-                    padding: const EdgeInsets.all(16),
-                  )))
-                ],
-              ),
+              ],
             ));
       }
       return const Scaffold(

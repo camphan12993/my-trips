@@ -3,6 +3,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:my_trips_app/controllers/auth/auth_controller.dart';
+import 'package:my_trips_app/core/app_colors.dart';
 import 'package:my_trips_app/core/app_pages.dart';
 import 'package:my_trips_app/core/app_routes.dart';
 
@@ -25,9 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'My Trips',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData().copyWith(primaryColor: AppColors.primary),
       color: Colors.white,
       builder: EasyLoading.init(),
       getPages: AppPages.pages,

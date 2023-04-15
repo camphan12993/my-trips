@@ -12,6 +12,7 @@ import '../../core/services/user_service.dart';
 import '../../models/app_user.dart';
 import '../../models/trip.dart';
 import '../../models/trip_expense.dart';
+import '../auth/auth_controller.dart';
 
 class TripDetailController extends GetxController {
   String? id;
@@ -24,13 +25,22 @@ class TripDetailController extends GetxController {
   final TextEditingController nameController = TextEditingController();
   final RxList<AppUser> members = RxList<AppUser>([]);
   RxList<AppUser> users = RxList([]);
-  RxBool isShowDetail = RxBool(false);
   RxBool isLoading = RxBool(false);
-  var selectedDate = -1.obs;
-  var selectedTab = 0.obs;
-  var editMode = false.obs;
   var selectedDay = 1.obs;
   var currentDay = 2.obs;
+  var bottomTabIndex = 0.obs;
+  final AuthController _authController = Get.find();
+
+  // trip settings
+  final TextEditingController startDateController = TextEditingController();
+  Rxn<DateTime> formSelectedDate = Rxn();
+  final RxnString selectedUser = RxnString();
+
+  List<AppUser> get listUsers => users
+      .where(
+        (u) => !members.any((m) => m.uid == u.uid) && u.uid != _authController.user!.uid,
+      )
+      .toList();
 
   @override
   Future<void> onInit() async {
@@ -41,8 +51,26 @@ class TripDetailController extends GetxController {
       await getTripById();
       await getTripNodes();
       await getListMember();
+      await getUserList();
+      if (trip.value != null) {
+        members.clear();
+        members.addAll(trip.value!.memberIds.map((id) => users.firstWhere((user) => user.uid == id)).toList());
+        nameController.text = trip.value!.name;
+        startDateController.text = trip.value!.startDate;
+        try {
+          formSelectedDate.value = DateTime.parse(trip.value!.startDate);
+        } catch (e) {
+          print(e);
+        }
+      }
       isLoading.value = false;
     }
+  }
+
+  Future<void> getUserList() async {
+    var result = await _userService.getListUser();
+    users.clear();
+    users.addAll(result);
   }
 
   Future<void> getTripById() async {
@@ -52,14 +80,14 @@ class TripDetailController extends GetxController {
     }
   }
 
-  void onSelectDate(int value) {
-    displayedTripNodes.clear();
-    selectedDate = value;
-    if (value == -1) {
-      displayedTripNodes.addAll(tripNodes);
-    } else {
-      displayedTripNodes.add(tripNodes[value]);
-    }
+  void addMember(String id) {
+    var user = users.firstWhere((user) => user.uid == id);
+    members.add(user);
+    selectedUser.value = null;
+  }
+
+  void deleteMember(String id) {
+    members.removeWhere((m) => m.uid == id);
   }
 
   AppUser getMember(String id) {
@@ -76,7 +104,6 @@ class TripDetailController extends GetxController {
     var result = await _tripService.getListNodes(tripId: id!);
     tripNodes.clear();
     tripNodes.addAll(result);
-    onSelectDate(selectedDate);
   }
 
   Future<void> addNode() async {
@@ -109,6 +136,33 @@ class TripDetailController extends GetxController {
     }
     result += getTotalInNode(trip.value!.otherExpense);
     return result;
+  }
+
+  Map<String, dynamic> getTripPayload() {
+    String adminId = _authController.user!.uid;
+    var memberIds = members.map((m) => m.uid);
+    return {
+      'name': nameController.text,
+      'startDate': startDateController.text,
+      'memberIds': [...memberIds, adminId],
+    };
+  }
+
+  Future<void> updateTrip() async {
+    if (formKey.currentState!.validate()) {
+      try {
+        EasyLoading.show(maskType: EasyLoadingMaskType.black);
+        await _tripService.updateTrip(
+          id: id!,
+          payload: getTripPayload(),
+        );
+        Get.back();
+      } catch (e) {
+        print(e);
+      }
+
+      EasyLoading.dismiss();
+    }
   }
 
   int eachMember() {
