@@ -3,7 +3,7 @@ import 'dart:convert';
 class AddPlanNodePayload {
   final String name;
   final String? note;
-  final String time;
+  final int time;
   final String nodeId;
   AddPlanNodePayload({
     required this.name,

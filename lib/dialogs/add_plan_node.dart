@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import 'package:my_trips_app/controllers/index.dart';
 import 'package:my_trips_app/core/app_colors.dart';
+import 'package:my_trips_app/core/app_utils.dart';
 import 'package:my_trips_app/models/add_plan_node_payload.dart';
 import 'package:my_trips_app/models/plan_node.dart';
 
@@ -26,17 +27,27 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
+  int pickedTimes = 0;
+  TimeOfDay? initTime;
 
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     if (widget.plan != null) {
+      int time = widget.plan!.time;
+      initTime = AppUtils.getTimeOfDate(time);
       _nameController.text = widget.plan!.name;
       _noteController.text = widget.plan!.note ?? '';
-      _timeController.text = widget.plan!.time;
+      _timeController.text = initTime!.format(context);
     }
     if (_timeController.text.isEmpty) {
-      _timeController.text = DateFormat('HH:mm').format(DateTime.now());
+      initTime = TimeOfDay.now();
+      _timeController.text = initTime!.format(context);
     }
   }
 
@@ -92,13 +103,9 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
                       )),
                   onTap: () async {
                     try {
-                      TimeOfDay? initTime;
-                      if (_timeController.text.isNotEmpty) {
-                        initTime = TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(_timeController.text));
-                      }
                       TimeOfDay? pickedTime = await showTimePicker(
                         context: context,
-                        initialTime: initTime ?? TimeOfDay.now(),
+                        initialTime: initTime!,
                         initialEntryMode: TimePickerEntryMode.input,
                         builder: (context, child) => MediaQuery(
                           data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
@@ -107,7 +114,8 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
                       );
                       if (pickedTime != null) {
                         setState(() {
-                          _timeController.text = '${pickedTime.hour < 12 ? '0' : ''}${pickedTime.hour}:${pickedTime.minute}';
+                          pickedTimes = pickedTime.minute + pickedTime.hour * 60;
+                          _timeController.text = pickedTime.format(context);
                         });
                       }
                     } catch (e) {
@@ -139,7 +147,7 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
                           widget.nodeId,
                           AddPlanNodePayload(
                             name: _nameController.text,
-                            time: _timeController.text,
+                            time: pickedTimes,
                             note: _noteController.text,
                             nodeId: widget.nodeId,
                           ));
@@ -160,7 +168,7 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
                             widget.plan!.id,
                             AddPlanNodePayload(
                               name: _nameController.text,
-                              time: _timeController.text,
+                              time: pickedTimes,
                               note: _noteController.text,
                               nodeId: widget.nodeId,
                             ));

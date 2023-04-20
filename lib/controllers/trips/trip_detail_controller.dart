@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:my_trips_app/core/app_constants.dart';
+import 'package:my_trips_app/core/app_utils.dart';
 import 'package:my_trips_app/core/services/trip_service.dart';
 import 'package:my_trips_app/models/add_plan_node_payload.dart';
+import 'package:my_trips_app/models/app_currency.dart';
 import 'package:my_trips_app/models/expense_payload.dart';
 import 'package:my_trips_app/models/trip_expense_payload.dart';
+import 'package:my_trips_app/models/trip_member.dart';
 import 'package:my_trips_app/models/trip_node.dart';
 
 import '../../core/services/user_service.dart';
-import '../../models/app_user.dart';
 import '../../models/trip.dart';
 import '../../models/trip_expense.dart';
-import '../auth/auth_controller.dart';
 
 class TripDetailController extends GetxController {
   String? id;
@@ -23,28 +25,27 @@ class TripDetailController extends GetxController {
   final UserService _userService = UserService();
   final formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
-  final RxList<AppUser> members = RxList<AppUser>([]);
-  RxList<AppUser> users = RxList([]);
+  final RxList<TripMember> members = RxList<TripMember>([]);
+  final RxList<TripMember> membersDropdown = RxList<TripMember>([]);
+  late NumberFormat formatCurrency;
   RxBool isLoading = RxBool(false);
-  var selectedDay = 1.obs;
-  var currentDay = 2.obs;
+  var selectedDay = 0.obs;
+  var currentDay = 0.obs;
   var bottomTabIndex = 0.obs;
-  final AuthController _authController = Get.find();
 
   // edit mode
   var isEditPlace = false.obs;
   var isEditExpense = false.obs;
 
+  String memberName(String id) {
+    return members.firstWhere((m) => m.id == id).name;
+  }
+
   // trip settings
   final TextEditingController startDateController = TextEditingController();
   Rxn<DateTime> formSelectedDate = Rxn();
-  final RxnString selectedUser = RxnString();
-
-  List<AppUser> get listUsers => users
-      .where(
-        (u) => !members.any((m) => m.uid == u.uid) && u.uid != _authController.user!.uid,
-      )
-      .toList();
+  final RxnString selectedMember = RxnString();
+  var selectedCurrency = ''.obs;
 
   @override
   Future<void> onInit() async {
@@ -54,19 +55,20 @@ class TripDetailController extends GetxController {
       isLoading.value = true;
       await getTripById();
       await getTripNodes();
-      await getListMember();
-      await getUserList();
+
       if (trip.value != null) {
         members.clear();
-        members.addAll(trip.value!.memberIds.map((id) => users.firstWhere((user) => user.uid == id)).toList());
+        members.addAll(trip.value!.members);
         nameController.text = trip.value!.name;
         startDateController.text = trip.value!.startDate;
+        selectedCurrency.value = trip.value!.locale;
         try {
           formSelectedDate.value = DateTime.parse(trip.value!.startDate);
         } catch (e) {
           print(e);
         }
       }
+      await getUserList();
       isLoading.value = false;
     }
   }
@@ -75,39 +77,35 @@ class TripDetailController extends GetxController {
 
   Future<void> getUserList() async {
     var result = await _userService.getListUser();
-    users.clear();
-    users.addAll(result);
+    for (var u in result) {
+      if (members.indexWhere((m) => m.id == u.uid) == -1) {
+        membersDropdown.add(TripMember(id: u.uid, name: u.name));
+      }
+    }
   }
 
   Future<void> getTripById() async {
     var result = await _tripService.getTripById(id: id!);
     if (result != null) {
       trip.value = result;
+      formatCurrency = AppUtils.formatCurrency(AppCurrency(local: trip.value!.locale, name: trip.value!.currency));
     }
   }
 
   void addMember(String id) {
-    var user = users.firstWhere((user) => user.uid == id);
-    members.add(user);
-    selectedUser.value = null;
+    selectedMember.value = null;
+    var member = membersDropdown.firstWhere((m) => m.id == id);
+    membersDropdown.removeWhere((m) => m.id == id);
+    members.add(member);
   }
 
-  void deleteMember(String id) {
-    members.removeWhere((m) => m.uid == id);
+  Future<void> addPayedExpense(Map<String, dynamic> payload) async {
+    await _tripService.addTripPayedExpense(tripId: trip.value!.id, payload: payload);
   }
 
-  AppUser? getMember(String id) {
-    return members.firstWhere((m) => m.uid == id);
-  }
-
-  String getMemberName(String id) {
-    return getMember(id)?.name ?? '';
-  }
-
-  Future<void> getListMember() async {
-    var result = await _userService.getListMember(trip.value!.memberIds);
-    members.clear();
-    members.addAll(result);
+  void deleteMember(TripMember member) {
+    members.remove(member);
+    membersDropdown.add(member);
   }
 
   Future<void> getTripNodes() async {
@@ -149,12 +147,13 @@ class TripDetailController extends GetxController {
   }
 
   Map<String, dynamic> getTripPayload() {
-    String adminId = _authController.user!.uid;
-    var memberIds = members.map((m) => m.uid);
+    var currency = AppConstants.currencies.firstWhere((a) => a.local == selectedCurrency.value);
     return {
       'name': nameController.text,
       'startDate': startDateController.text,
-      'memberIds': [...memberIds, adminId],
+      'members': members.map((m) => m.toMap()),
+      'currency': currency.name,
+      'locale': currency.local,
     };
   }
 
@@ -166,11 +165,11 @@ class TripDetailController extends GetxController {
           id: id!,
           payload: getTripPayload(),
         );
-        Get.back();
+        await getTripById();
+        EasyLoading.dismiss();
       } catch (e) {
         print(e);
       }
-
       EasyLoading.dismiss();
     }
   }

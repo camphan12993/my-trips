@@ -24,11 +24,15 @@ class HomeController extends GetxController {
 
   Future<void> getTrips() async {
     EasyLoading.show(maskType: EasyLoadingMaskType.black);
-
-    var result = await _tripService.getTrips(uid: _authController.user!.uid);
-    trips.clear();
-    trips.addAll(result);
-    EasyLoading.dismiss();
+    try {
+      var result = await _tripService.getTrips(uid: _authController.user!.uid);
+      trips.clear();
+      trips.addAll(result);
+      EasyLoading.dismiss();
+    } catch (e) {
+      print(e);
+      EasyLoading.dismiss();
+    }
   }
 
   Future<void> deleteTrip(String id) async {

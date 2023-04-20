@@ -66,29 +66,11 @@ class AppPages {
       ),
     ),
     GetPage(
-      name: AppRoutes.createTrip,
-      page: () => const CreateTrip(),
-      binding: BindingsBuilder(
-        () {
-          Get.lazyPut(() => CreateTripController());
-        },
-      ),
-    ),
-    GetPage(
       name: AppRoutes.tripDetail,
       page: () => TripDetail(),
       binding: BindingsBuilder(
         () {
           Get.lazyPut(() => TripDetailController());
-        },
-      ),
-    ),
-    GetPage(
-      name: AppRoutes.tripSettings,
-      page: () => const CreateTrip(),
-      binding: BindingsBuilder(
-        () {
-          Get.lazyPut(() => CreateTripController());
         },
       ),
     ),

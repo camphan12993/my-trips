@@ -44,6 +44,7 @@ dependencies:
   intl: ^0.17.0
   flutter_multi_formatter: ^2.10.2
   get_storage: ^2.1.1
+  dotted_border: ^2.0.0+3
 
 dev_dependencies:
   flutter_test:

@@ -10,12 +10,6 @@ class TripService {
     DocumentReference result = await tripCollection.add(payload);
     await result.update({'id': result.id});
     await addTripNode(tripId: result.id);
-    var userCollection = FirebaseFirestore.instance.collection('users');
-    for (var id in payload['memberIds']) {
-      userCollection.doc(id).update({
-        'tripIds': FieldValue.arrayUnion([result.id])
-      });
-    }
   }
 
   Future<List<Trip>> getTrips({required String uid}) async {
@@ -64,6 +58,13 @@ class TripService {
     await result.update({'id': result.id});
   }
 
+  Future<void> addTripPayedExpense({required String tripId, required Map<String, dynamic> payload}) async {
+    final CollectionReference tripCollection = FirebaseFirestore.instance.collection('trips');
+    return await tripCollection.doc(tripId).set({
+      'payedExpenses': FieldValue.arrayUnion([payload])
+    }, SetOptions(merge: true));
+  }
+
   Future<void> deleteNode(String id) async {
     var tripNodes = FirebaseFirestore.instance.collection('trip_nodes').doc(id);
     await tripNodes.delete();
@@ -95,13 +96,13 @@ class TripService {
 
   Future<void> addExpense({required String nodeId, required Map<String, dynamic> payload}) async {
     var expenses = FirebaseFirestore.instance.collection('trip_nodes').doc(nodeId).collection('expense');
-    var result = await expenses.add({...payload, 'nodeId': nodeId});
+    var result = await expenses.add({...payload, 'createdAt': DateTime.now().toUtc().toString()});
     await result.update({'id': result.id});
   }
 
   Future<void> addTripOtherExpense({required String tripId, required Map<String, dynamic> payload}) async {
     var expenses = FirebaseFirestore.instance.collection('trips').doc(tripId).collection('expense');
-    var result = await expenses.add(payload);
+    var result = await expenses.add({...payload, 'createdAt': DateTime.now().toUtc().toString()});
     await result.update({'id': result.id});
   }
 

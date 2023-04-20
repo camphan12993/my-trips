@@ -101,27 +101,6 @@ class TripDetail extends GetView<TripDetailController> {
                 elevation: 0,
                 centerTitle: true,
                 backgroundColor: AppColors.primary,
-                actions: [
-                  if (controller.bottomTabIndex.value == 0)
-                    Center(
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        height: 32,
-                        width: 32,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
-                          color: Colors.white,
-                          boxShadow: const [
-                            BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.2), spreadRadius: 0, blurRadius: 12),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.add,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                ],
               ),
             ),
             bottomNavigationBar: BottomNavigationBar(

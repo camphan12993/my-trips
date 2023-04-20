@@ -35,6 +35,14 @@ class MyApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(6.0),
             borderSide: BorderSide(width: 1, color: Colors.grey[400]!),
           ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6.0),
+            borderSide: const BorderSide(width: 1, color: Colors.red),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6.0),
+            borderSide: const BorderSide(width: 1, color: Colors.red),
+          ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(6.0),
             borderSide: BorderSide(width: 1, color: AppColors.primary),

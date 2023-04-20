@@ -4,7 +4,7 @@ class PlanNode {
   final String id;
   final String name;
   final String? note;
-  final String time;
+  final int time;
   final String nodeId;
   PlanNode({
     required this.id,

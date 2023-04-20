@@ -1,21 +1,29 @@
 import 'dart:convert';
 
 import 'package:my_trips_app/models/trip_expense.dart';
+import 'package:my_trips_app/models/trip_member.dart';
+import 'package:my_trips_app/models/trip_payed_expense.dart';
 
 class Trip {
   final String id;
   final String name;
   final String adminId;
   final String startDate;
-  final List<String> memberIds;
-  List<TripExpense> otherExpense;
+  final String locale;
+  final String currency;
+  final List<TripMember> members;
+  final List<TripExpense> otherExpense;
+  final List<TripPayedExpense> payedExpenses;
   Trip({
     required this.id,
     required this.name,
     required this.adminId,
     required this.startDate,
-    required this.memberIds,
+    required this.locale,
+    required this.currency,
+    required this.members,
     required this.otherExpense,
+    required this.payedExpenses,
   });
 
   Map<String, dynamic> toMap() {
@@ -25,8 +33,11 @@ class Trip {
     result.addAll({'name': name});
     result.addAll({'adminId': adminId});
     result.addAll({'startDate': startDate});
-    result.addAll({'memberIds': memberIds});
+    result.addAll({'locale': locale});
+    result.addAll({'currency': currency});
+    result.addAll({'members': members.map((x) => x.toMap()).toList()});
     result.addAll({'otherExpense': otherExpense.map((x) => x.toMap()).toList()});
+    result.addAll({'payedExpenses': payedExpenses.map((x) => x.toMap()).toList()});
 
     return result;
   }
@@ -37,8 +48,11 @@ class Trip {
       name: map['name'] ?? '',
       adminId: map['adminId'] ?? '',
       startDate: map['startDate'] ?? '',
-      memberIds: List<String>.from(map['memberIds']),
-      otherExpense: map['otherExpense'] != null ? List<TripExpense>.from(map['otherExpense']?.map((x) => TripExpense.fromMap(x))) : [],
+      locale: map['locale'] ?? '',
+      currency: map['currency'] ?? '',
+      members: List<TripMember>.from((map['members'] ?? []).map((x) => TripMember.fromMap(x))),
+      otherExpense: List<TripExpense>.from((map['otherExpense'] ?? []).map((x) => TripExpense.fromMap(x))),
+      payedExpenses: List<TripPayedExpense>.from((map['payedExpenses'] ?? []).map((x) => TripPayedExpense.fromMap(x))),
     );
   }
 

@@ -5,9 +5,12 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import 'package:my_trips_app/controllers/index.dart';
+import 'package:my_trips_app/core/app_colors.dart';
+import 'package:my_trips_app/core/app_styles.dart';
 import 'package:my_trips_app/models/expense_payload.dart';
 import 'package:my_trips_app/models/trip_expense.dart';
 import 'package:my_trips_app/models/trip_expense_payload.dart';
+import 'package:my_trips_app/models/trip_member.dart';
 
 import '../models/app_user.dart';
 
@@ -51,95 +54,81 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Chi tiêu'),
-      content: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _desController,
-                decoration: const InputDecoration(labelText: 'Mặt hàng'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng thêm mặt hàng';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              TextFormField(
-                controller: _moneyController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  CurrencyInputFormatter(mantissaLength: 0, thousandSeparator: ThousandSeparator.Period),
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập giá trị';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(labelText: 'Giá trị', suffixText: 'đ'),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              SizedBox(
-                height: 60,
-                child: DropdownButton<String>(
+      title: Text(
+        'Chi tiêu',
+        style: TextStyle(color: AppColors.primary, fontSize: 16),
+      ),
+      contentPadding: const EdgeInsets.only(top: 20, bottom: 0, left: 24, right: 24),
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _desController,
+                  decoration: const InputDecoration(hintText: 'Mặt hàng'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng thêm mặt hàng';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  controller: _moneyController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    CurrencyInputFormatter(mantissaLength: 0, thousandSeparator: ThousandSeparator.Period),
+                  ],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập giá trị';
+                    }
+                    return null;
+                  },
+                  decoration: const InputDecoration(hintText: 'Giá trị', suffixText: 'đ'),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                DropdownButtonFormField<String>(
                   isExpanded: true,
                   value: _selectedMemberId,
                   onChanged: (String? value) {
                     _selectedMemberId = value;
                     setState(() {});
                   },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng chọn người chi';
+                    }
+                    return null;
+                  },
+                  decoration: appInputDecoration,
                   hint: const Text('Người chi'),
-                  items: _tripDetailController.members.map<DropdownMenuItem<String>>((AppUser value) {
+                  items: _tripDetailController.members.map<DropdownMenuItem<String>>((TripMember value) {
                     return DropdownMenuItem<String>(
-                      value: value.uid,
+                      value: value.id,
                       child: Text(value.name),
                     );
                   }).toList(),
                 ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              TextFormField(
-                controller: _noteController,
-                decoration: const InputDecoration(labelText: 'Ghi chú'),
-              ),
-              // TextFormField(
-              //   controller: _timeController,
-              //   readOnly: true,
-              //   validator: (value) {
-              //     if (value == null || value.isEmpty) {
-              //       return 'Vui lòng chọn thời gian';
-              //     }
-              //     return null;
-              //   },
-              //   decoration: const InputDecoration(labelText: 'Thời gian', suffixIcon: Icon(Icons.timer_outlined)),
-              //   onTap: () async {
-              //     TimeOfDay? initTime;
-              //     if (_timeController.text.isNotEmpty) {
-              //       initTime = TimeOfDay.fromDateTime(DateFormat('HH:mm').parse(_timeController.text));
-              //     }
-              //     TimeOfDay? pickedTime = await showTimePicker(context: context, initialTime: initTime ?? TimeOfDay.now());
-              //     if (pickedTime != null) {
-              //       DateTime parsedTime = DateFormat.jm().parse(pickedTime.format(context).toString());
-              //       String formattedTime = DateFormat('HH:mm').format(parsedTime);
-              //       setState(() {
-              //         _timeController.text = formattedTime;
-              //       });
-              //     }
-              //   },
-              // )
-            ],
-          )),
+                const SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  controller: _noteController,
+                  decoration: const InputDecoration(hintText: 'Ghi chú'),
+                ),
+              ],
+            )),
+      ),
       actions: [
         widget.expense == null
             ? Center(
