@@ -47,33 +47,34 @@ class TripTotalExpense extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (total > 0)
-                Text.rich(
-                  TextSpan(
-                    text: '(Đã góp ',
-                    style: const TextStyle(fontSize: 12),
-                    children: [
-                      TextSpan(
-                        text: _controller.formatCurrency.format(total),
-                        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
-                      ),
-                      const TextSpan(
-                        text: ')',
-                      ),
-                    ],
-                  ),
-                ),
-              if (total == 0)
-                const Text(
-                  '(Chưa góp)',
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontWeight: FontWeight.w300,
-                    fontSize: 12,
-                  ),
-                ),
+              const SizedBox.shrink(),
+              // if (total > 0)
+              //   Text.rich(
+              //     TextSpan(
+              //       text: '(Đã góp ',
+              //       style: const TextStyle(fontSize: 12),
+              //       children: [
+              //         TextSpan(
+              //           text: _controller.formatCurrency.format(total),
+              //           style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+              //         ),
+              //         const TextSpan(
+              //           text: ')',
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // if (total == 0)
+              //   const Text(
+              //     '(Chưa góp)',
+              //     style: TextStyle(
+              //       fontStyle: FontStyle.italic,
+              //       fontWeight: FontWeight.w300,
+              //       fontSize: 12,
+              //     ),
+              //   ),
               Text(
-                '(${diff >= 0 ? "Dư" : "Thiếu"} ${_controller.formatCurrency.format(diff.abs())})',
+                '(${diff == 0 ? "Đủ" : diff > 0 ? "Dư " : "Thiếu "}${diff == 0 ? '' : _controller.formatCurrency.format(diff.abs())})',
                 style: TextStyle(
                   color: diff >= 0 ? Colors.green : Colors.red,
                   fontSize: 12,
@@ -318,21 +319,21 @@ class TripTotalExpense extends StatelessWidget {
           const SizedBox(
             height: 16,
           ),
-          buildSectionTitle('Đã góp'),
-          const SizedBox(
-            height: 8,
-          ),
-          ListView.separated(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemBuilder: (context, index) => buildPayedItem(_controller.members[index]),
-              separatorBuilder: (context, index) => const SizedBox(
-                    height: 10,
-                  ),
-              itemCount: _controller.members.length),
-          const SizedBox(
-            height: 16,
-          ),
+          // buildSectionTitle('Đã góp'),
+          // const SizedBox(
+          //   height: 8,
+          // ),
+          // ListView.separated(
+          //     physics: const NeverScrollableScrollPhysics(),
+          //     shrinkWrap: true,
+          //     itemBuilder: (context, index) => buildPayedItem(_controller.members[index]),
+          //     separatorBuilder: (context, index) => const SizedBox(
+          //           height: 10,
+          //         ),
+          //     itemCount: _controller.members.length),
+          // const SizedBox(
+          //   height: 16,
+          // ),
         ],
       ),
     );
