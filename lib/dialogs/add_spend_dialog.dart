@@ -12,8 +12,6 @@ import 'package:my_trips_app/models/trip_expense.dart';
 import 'package:my_trips_app/models/trip_expense_payload.dart';
 import 'package:my_trips_app/models/trip_member.dart';
 
-import '../models/app_user.dart';
-
 class AddSpendDialog extends StatefulWidget {
   final String? nodeId;
   final TripExpense? expense;
@@ -54,6 +52,7 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      actionsAlignment: MainAxisAlignment.center,
       title: Text(
         'Chi tiêu',
         style: TextStyle(color: AppColors.primary, fontSize: 16),
@@ -131,89 +130,62 @@ class _AddSpendDialogState extends State<AddSpendDialog> {
       ),
       actions: [
         widget.expense == null
-            ? Center(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate() && _selectedMemberId != null) {
-                      if (widget.nodeId != null) {
-                        await _tripDetailController.addExpend(
-                          ExpensePayload(
-                            nodeId: widget.nodeId!,
-                            userId: _selectedMemberId!,
-                            value: int.parse((toNumericString(_moneyController.text))),
-                            name: _desController.text,
-                            note: _noteController.text,
-                          ),
-                        );
-                      } else {
-                        await _tripDetailController.addTripExpense(TripExpensePayload(
+            ? ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate() && _selectedMemberId != null) {
+                    if (widget.nodeId != null) {
+                      await _tripDetailController.addExpend(
+                        ExpensePayload(
+                          nodeId: widget.nodeId!,
                           userId: _selectedMemberId!,
                           value: int.parse((toNumericString(_moneyController.text))),
                           name: _desController.text,
                           note: _noteController.text,
-                        ));
-                      }
-
-                      Get.back();
+                        ),
+                      );
+                    } else {
+                      await _tripDetailController.addTripExpense(TripExpensePayload(
+                        userId: _selectedMemberId!,
+                        value: int.parse((toNumericString(_moneyController.text))),
+                        name: _desController.text,
+                        note: _noteController.text,
+                      ));
                     }
-                  },
-                  child: const Text('Thêm'),
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate() && _selectedMemberId != null) {
-                        if (widget.nodeId != null) {
-                          await _tripDetailController.updateExpend(
-                            widget.expense!.id,
-                            ExpensePayload(
-                              nodeId: widget.nodeId!,
-                              userId: _selectedMemberId!,
-                              value: int.parse((toNumericString(_moneyController.text))),
-                              name: _desController.text,
-                              note: _noteController.text,
-                            ),
-                          );
-                        } else {
-                          await _tripDetailController.updateTripExpense(
-                              widget.expense!.id,
-                              TripExpensePayload(
-                                userId: _selectedMemberId!,
-                                value: int.parse((toNumericString(_moneyController.text))),
-                                name: _desController.text,
-                                note: _noteController.text,
-                              ));
-                        }
 
-                        Get.back();
-                      }
-                    },
-                    child: const Text('Lưu'),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                    onPressed: () async {
-                      if (widget.nodeId != null) {
-                        await _tripDetailController.deleteExpend(
+                    Get.back();
+                  }
+                },
+                child: const Text('Thêm'),
+              )
+            : ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate() && _selectedMemberId != null) {
+                    if (widget.nodeId != null) {
+                      await _tripDetailController.updateExpend(
+                        widget.expense!.id,
+                        ExpensePayload(
                           nodeId: widget.nodeId!,
-                          expenseId: widget.expense!.id,
-                        );
-                      } else {
-                        await _tripDetailController.deleteTripExpense(
+                          userId: _selectedMemberId!,
+                          value: int.parse((toNumericString(_moneyController.text))),
+                          name: _desController.text,
+                          note: _noteController.text,
+                        ),
+                      );
+                    } else {
+                      await _tripDetailController.updateTripExpense(
                           widget.expense!.id,
-                        );
-                      }
-                      Get.back();
-                    },
-                    child: const Text('Xoá'),
-                  )
-                ],
+                          TripExpensePayload(
+                            userId: _selectedMemberId!,
+                            value: int.parse((toNumericString(_moneyController.text))),
+                            name: _desController.text,
+                            note: _noteController.text,
+                          ));
+                    }
+
+                    Get.back();
+                  }
+                },
+                child: const Text('Lưu'),
               ),
       ],
     );

@@ -51,8 +51,7 @@ class UsernameLogin extends GetView<UsernameLoginController> {
                         return null;
                       },
                       decoration: const InputDecoration(
-                        hintText: 'Input your email',
-                        labelText: 'Tên đăng nhập',
+                        hintText: 'Tên đăng nhập',
                       ),
                     ),
                   ],

@@ -14,17 +14,18 @@ class Trip {
   final List<TripMember> members;
   final List<TripExpense> otherExpense;
   final List<TripPayedExpense> payedExpenses;
-  Trip({
-    required this.id,
-    required this.name,
-    required this.adminId,
-    required this.startDate,
-    required this.locale,
-    required this.currency,
-    required this.members,
-    required this.otherExpense,
-    required this.payedExpenses,
-  });
+  final bool hasEnd;
+  Trip(
+      {required this.id,
+      required this.name,
+      required this.adminId,
+      required this.startDate,
+      required this.locale,
+      required this.currency,
+      required this.members,
+      required this.otherExpense,
+      required this.payedExpenses,
+      required this.hasEnd});
 
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
@@ -35,6 +36,7 @@ class Trip {
     result.addAll({'startDate': startDate});
     result.addAll({'locale': locale});
     result.addAll({'currency': currency});
+    result.addAll({'hasEnd': hasEnd});
     result.addAll({'members': members.map((x) => x.toMap()).toList()});
     result.addAll({'otherExpense': otherExpense.map((x) => x.toMap()).toList()});
     result.addAll({'payedExpenses': payedExpenses.map((x) => x.toMap()).toList()});
@@ -50,6 +52,7 @@ class Trip {
       startDate: map['startDate'] ?? '',
       locale: map['locale'] ?? '',
       currency: map['currency'] ?? '',
+      hasEnd: map['hasEnd'] ?? false,
       members: List<TripMember>.from((map['members'] ?? []).map((x) => TripMember.fromMap(x))),
       otherExpense: List<TripExpense>.from((map['otherExpense'] ?? []).map((x) => TripExpense.fromMap(x))),
       payedExpenses: List<TripPayedExpense>.from((map['payedExpenses'] ?? []).map((x) => TripPayedExpense.fromMap(x))),

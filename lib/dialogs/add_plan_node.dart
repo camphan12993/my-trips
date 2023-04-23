@@ -39,21 +39,22 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (widget.plan != null) {
-      int time = widget.plan!.time;
-      initTime = AppUtils.getTimeOfDate(time);
       _nameController.text = widget.plan!.name;
       _noteController.text = widget.plan!.note ?? '';
-      _timeController.text = initTime!.format(context);
     }
-    if (_timeController.text.isEmpty) {
-      initTime = TimeOfDay.now();
-      _timeController.text = initTime!.format(context);
-    }
+    initTimePicker();
+  }
+
+  void initTimePicker() {
+    initTime = widget.plan != null ? AppUtils.getTimeOfDate(widget.plan!.time) : TimeOfDay.now();
+    _timeController.text = initTime!.format(context);
+    pickedTimes = initTime!.hour * 60 + initTime!.minute;
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      actionsAlignment: MainAxisAlignment.center,
       title: const Text(
         'Địa điểm',
         textAlign: TextAlign.center,
@@ -139,59 +140,38 @@ class _AddPlanNodeDialogState extends State<AddPlanNodeDialog> {
       ),
       actions: [
         widget.plan == null
-            ? Center(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      await _tripDetailController.addPlanNode(
-                          widget.nodeId,
-                          AddPlanNodePayload(
-                            name: _nameController.text,
-                            time: pickedTimes,
-                            note: _noteController.text,
-                            nodeId: widget.nodeId,
-                          ));
-                      Get.back();
-                    }
-                  },
-                  child: const Text('Thêm'),
-                ),
+            ? ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    await _tripDetailController.addPlanNode(
+                        widget.nodeId,
+                        AddPlanNodePayload(
+                          name: _nameController.text,
+                          time: pickedTimes,
+                          note: _noteController.text,
+                          nodeId: widget.nodeId,
+                        ));
+                    Get.back();
+                  }
+                },
+                child: const Text('Thêm'),
               )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        await _tripDetailController.updatePlanNode(
-                            widget.nodeId,
-                            widget.plan!.id,
-                            AddPlanNodePayload(
-                              name: _nameController.text,
-                              time: pickedTimes,
-                              note: _noteController.text,
-                              nodeId: widget.nodeId,
-                            ));
-                        Get.back();
-                      }
-                    },
-                    child: const Text('Lưu'),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                    onPressed: () async {
-                      await _tripDetailController.deletePlanNode(
+            : ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    await _tripDetailController.updatePlanNode(
                         widget.nodeId,
                         widget.plan!.id,
-                      );
-                      Get.back();
-                    },
-                    child: const Text('Xoá'),
-                  )
-                ],
+                        AddPlanNodePayload(
+                          name: _nameController.text,
+                          time: pickedTimes,
+                          note: _noteController.text,
+                          nodeId: widget.nodeId,
+                        ));
+                    Get.back();
+                  }
+                },
+                child: const Text('Lưu'),
               ),
       ],
     );

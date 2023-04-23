@@ -30,12 +30,8 @@ class TripDetailController extends GetxController {
   late NumberFormat formatCurrency;
   RxBool isLoading = RxBool(false);
   var selectedDay = 0.obs;
-  var currentDay = 0.obs;
+  var currentDay = (-1).obs;
   var bottomTabIndex = 0.obs;
-
-  // edit mode
-  var isEditPlace = false.obs;
-  var isEditExpense = false.obs;
 
   String memberName(String id) {
     return members.firstWhere((m) => m.id == id).name;
@@ -62,6 +58,10 @@ class TripDetailController extends GetxController {
         nameController.text = trip.value!.name;
         startDateController.text = trip.value!.startDate;
         selectedCurrency.value = trip.value!.locale;
+        getCurrentDay();
+        if (currentDay.value > -1) {
+          selectedDay.value = currentDay.value;
+        }
         try {
           formSelectedDate.value = DateTime.parse(trip.value!.startDate);
         } catch (e) {
@@ -73,7 +73,14 @@ class TripDetailController extends GetxController {
     }
   }
 
-  TripNode get currentNode => tripNodes[selectedDay.value];
+  getCurrentDay() {
+    DateTime start = DateTime.parse(trip.value!.startDate);
+    DateTime now = DateTime.now();
+    if (now.isAfter(start) || now.isAtSameMomentAs(start)) {
+      int diff = now.difference(start).inDays;
+      currentDay.value = diff >= tripNodes.length ? -1 : diff;
+    }
+  }
 
   Future<void> getUserList() async {
     var result = await _userService.getListUser();
@@ -100,7 +107,10 @@ class TripDetailController extends GetxController {
   }
 
   Future<void> addPayedExpense(Map<String, dynamic> payload) async {
+    EasyLoading.show(maskType: EasyLoadingMaskType.black);
     await _tripService.addTripPayedExpense(tripId: trip.value!.id, payload: payload);
+    await getTripById();
+    EasyLoading.dismiss();
   }
 
   void deleteMember(TripMember member) {
@@ -119,7 +129,9 @@ class TripDetailController extends GetxController {
     await _tripService.addTripNode(
       tripId: id!,
     );
-    getTripNodes();
+    await getTripNodes();
+    getCurrentDay();
+    selectedDay.value = tripNodes.length - 1;
     EasyLoading.dismiss();
   }
 
@@ -150,7 +162,7 @@ class TripDetailController extends GetxController {
     var currency = AppConstants.currencies.firstWhere((a) => a.local == selectedCurrency.value);
     return {
       'name': nameController.text,
-      'startDate': startDateController.text,
+      'startDate': DateFormat('yyyy-MM-dd').format(formSelectedDate.value!),
       'members': members.map((m) => m.toMap()),
       'currency': currency.name,
       'locale': currency.local,
@@ -245,10 +257,10 @@ class TripDetailController extends GetxController {
     EasyLoading.dismiss();
   }
 
-  Future<void> deleteExpend({
-    required String nodeId,
-    required String expenseId,
-  }) async {
+  Future<void> deleteExpend(
+    String nodeId,
+    String expenseId,
+  ) async {
     EasyLoading.show(maskType: EasyLoadingMaskType.black);
     await _tripService.deleteExpense(nodeId: nodeId, id: expenseId);
     await getTripNodes();

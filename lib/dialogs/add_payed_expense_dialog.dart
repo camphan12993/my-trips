@@ -2,14 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 
 import 'package:my_trips_app/controllers/index.dart';
 import 'package:my_trips_app/core/app_colors.dart';
-import 'package:my_trips_app/core/app_styles.dart';
-import 'package:my_trips_app/models/expense_payload.dart';
-import 'package:my_trips_app/models/trip_expense_payload.dart';
-import 'package:my_trips_app/models/trip_member.dart';
 import 'package:my_trips_app/models/trip_payed_expense.dart';
 
 class AddPayedExpenseDialog extends StatefulWidget {
@@ -97,7 +92,7 @@ class _AddPayedExpenseDialogState extends State<AddPayedExpenseDialog> {
                   'name': _nameController.text,
                   'value': int.parse((toNumericString(_moneyController.text))),
                 });
-                Get.back();
+                Get.back(result: true);
               }
             },
             child: const Text('Thêm'),

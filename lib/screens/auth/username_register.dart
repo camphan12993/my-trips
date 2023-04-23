@@ -50,13 +50,12 @@ class UsernameRegister extends GetView<UsernameRegisterController> {
                       controller: controller.usernameController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Vui lòng nhập username';
+                          return 'Vui lòng tên tài khoản';
                         }
                         return null;
                       },
                       decoration: const InputDecoration(
-                        hintText: 'Input your name',
-                        labelText: 'Username',
+                        hintText: 'Tên tài khoản',
                       ),
                     ),
                     const SizedBox(
@@ -66,13 +65,12 @@ class UsernameRegister extends GetView<UsernameRegisterController> {
                       controller: controller.nameController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Vui lòng nhập nick name';
+                          return 'Vui lòng nhập tên hiển thị';
                         }
                         return null;
                       },
                       decoration: const InputDecoration(
-                        hintText: 'Input your name',
-                        labelText: 'Nick name',
+                        hintText: 'Tên hiển thị',
                       ),
                     ),
                   ],
@@ -92,7 +90,7 @@ class UsernameRegister extends GetView<UsernameRegisterController> {
                 alignment: Alignment.center,
                 child: GestureDetector(
                   onTap: () {
-                    Get.offNamed(AppRoutes.login);
+                    Get.offNamed(AppRoutes.usernameLogin);
                   },
                   child: const Text('Đăng nhập?'),
                 ),

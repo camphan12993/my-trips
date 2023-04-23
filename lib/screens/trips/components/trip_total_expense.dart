@@ -6,6 +6,7 @@ import 'package:my_trips_app/models/trip_member.dart';
 import 'package:my_trips_app/models/trip_payed_expense.dart';
 import 'package:my_trips_app/screens/trips/widgets/expense_item.dart';
 import 'package:my_trips_app/widgets/app_card_wrapper.dart';
+import 'package:my_trips_app/widgets/app_slidable.dart';
 
 import '../../../controllers/trips/trip_detail_controller.dart';
 import '../../../dialogs/add_spend_dialog.dart';
@@ -72,7 +73,7 @@ class TripTotalExpense extends StatelessWidget {
                   ),
                 ),
               Text(
-                '(${diff > 0 ? "+" : ""}${_controller.formatCurrency.format(diff)})',
+                '(${diff >= 0 ? "Dư" : "Thiếu"} ${_controller.formatCurrency.format(diff.abs())})',
                 style: TextStyle(
                   color: diff >= 0 ? Colors.green : Colors.red,
                   fontSize: 12,
@@ -90,7 +91,7 @@ class TripTotalExpense extends StatelessWidget {
       title,
       style: TextStyle(
         fontWeight: FontWeight.w500,
-        fontSize: 18,
+        fontSize: 16,
         color: AppColors.primary,
       ),
     );
@@ -102,103 +103,107 @@ class TripTotalExpense extends StatelessWidget {
     for (var i in items) {
       total = total + i.value;
     }
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              member.name,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            AppIconButton(
+              Icon(
+                Icons.add,
+                color: AppColors.primary,
+              ),
+              onTap: () => Get.dialog(AddPayedExpenseDialog(
+                memberId: member.id,
+              )).then((value) {
+                if (value) {}
+              }),
+            ),
+          ],
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        AppCardWrapper(
+          child: Column(
             children: [
-              Text(
-                member.name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
+              if (items.isNotEmpty) ...[
+                ...items.map((e) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(e.name),
+                          Text(
+                            _controller.formatCurrency.format(e.value),
+                          )
+                        ],
+                      ),
+                    )),
+                const Divider(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Tổng',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      _controller.formatCurrency.format(total),
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    )
+                  ],
                 ),
-              ),
-              AppIconButton(
-                Icon(
-                  Icons.add,
-                  color: AppColors.primary,
-                ),
-                onTap: () => Get.dialog(AddPayedExpenseDialog(
-                  memberId: member.id,
-                )),
-              ),
+              ] else
+                const DataPlaceholder(
+                  text: 'Chưa góp',
+                )
             ],
           ),
-          const SizedBox(
-            height: 10,
-          ),
-          AppCardWrapper(
-            child: Column(
-              children: [
-                if (items.isNotEmpty) ...[
-                  ...items.map((e) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(e.name),
-                            Text(
-                              _controller.formatCurrency.format(e.value),
-                            )
-                          ],
-                        ),
-                      )),
-                  const Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Tổng',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        _controller.formatCurrency.format(total),
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      )
-                    ],
-                  ),
-                ] else
-                  const DataPlaceholder(
-                    text: 'Chưa góp',
-                  )
-              ],
-            ),
-          )
-        ],
-      ),
+        )
+      ],
     );
   }
 
   Widget buildExpenseByDay() {
     return AppCardWrapper(
-      child: Column(
-        children: _controller.tripNodes.asMap().entries.map(
-          (node) {
-            var total = _controller.getTotalInNode(node.value.expenses);
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Ngày ${node.key + 1}:'),
-                  Text(
-                    total > 0
-                        ? _controller.formatCurrency.format(
-                            total,
-                          )
-                        : '-',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+      child: _controller.tripNodes.isNotEmpty
+          ? ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                var node = _controller.tripNodes[index];
+                var total = _controller.getTotalInNode(node.expenses);
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Ngày ${index + 1}:',
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    Text(
+                      total > 0
+                          ? _controller.formatCurrency.format(
+                              total,
+                            )
+                          : '-',
+                    ),
+                  ],
+                );
+              },
+              separatorBuilder: (context, index) => const SizedBox(
+                    height: 10,
                   ),
-                ],
-              ),
-            );
-          },
-        ).toList(),
-      ),
+              itemCount: _controller.tripNodes.length)
+          : const DataPlaceholder(text: 'Chưa có lịch trình'),
     );
   }
 
@@ -207,7 +212,7 @@ class TripTotalExpense extends StatelessWidget {
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -256,41 +261,75 @@ class TripTotalExpense extends StatelessWidget {
           const SizedBox(
             height: 12,
           ),
-          AppCardWrapper(
-              child: _controller.trip.value!.otherExpense.isNotEmpty
-                  ? Column(
-                      children: _controller.trip.value!.otherExpense
-                          .map(
-                            (e) => ExpenseItem(
-                              data: e,
-                              memberName: _controller.memberName(e.userId),
-                              formatCurrency: _controller.formatCurrency,
-                            ),
-                          )
-                          .toList(),
-                    )
-                  : const DataPlaceholder(
-                      text: 'Chưa có chi tiêu',
-                    )),
+          _controller.trip.value!.otherExpense.isNotEmpty
+              ? Column(
+                  children: _controller.trip.value!.otherExpense
+                      .map(
+                        (e) => AppSlidable(
+                          key: ValueKey(e.id),
+                          onDelete: () {
+                            Get.dialog(
+                              AlertDialog(
+                                title: const Text(
+                                  'Xoá chi tiêu này?',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                actionsAlignment: MainAxisAlignment.center,
+                                actions: [
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      await _controller.deleteTripExpense(e.id);
+                                      Get.back();
+                                    },
+                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                    child: const Text('Xoá'),
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                          onEdit: () {
+                            Get.dialog(
+                              AddSpendDialog(
+                                expense: e,
+                              ),
+                            );
+                          },
+                          child: ExpenseItem(
+                            data: e,
+                            memberName: _controller.memberName(e.userId),
+                            formatCurrency: _controller.formatCurrency,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                )
+              : const DataPlaceholder(
+                  text: 'Chưa có chi tiêu',
+                ),
           const SizedBox(
             height: 16,
-          ),
-          buildSectionTitle('Đã góp'),
-          Column(
-            children: _controller.members
-                .map(
-                  (u) => buildPayedItem(u),
-                )
-                .toList(),
-          ),
-          const SizedBox(
-            height: 12,
           ),
           buildSectionTitle('Theo Ngày'),
           const SizedBox(
             height: 8,
           ),
           buildExpenseByDay(),
+          const SizedBox(
+            height: 16,
+          ),
+          buildSectionTitle('Đã góp'),
+          const SizedBox(
+            height: 8,
+          ),
+          ListView.separated(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemBuilder: (context, index) => buildPayedItem(_controller.members[index]),
+              separatorBuilder: (context, index) => const SizedBox(
+                    height: 10,
+                  ),
+              itemCount: _controller.members.length),
           const SizedBox(
             height: 16,
           ),

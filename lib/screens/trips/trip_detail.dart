@@ -7,6 +7,7 @@ import 'package:my_trips_app/models/trip_node.dart';
 import 'package:my_trips_app/screens/trips/components/trip_day_plan.dart';
 import 'package:my_trips_app/screens/trips/components/trip_total_expense.dart';
 
+import '../../core/app_utils.dart';
 import 'components/trip_settings.dart';
 
 class TripDetail extends GetView<TripDetailController> {
@@ -89,8 +90,21 @@ class TripDetail extends GetView<TripDetailController> {
               child: AppBar(
                 titleTextStyle: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
                 iconTheme: const IconThemeData(color: Colors.white),
-                title: Text(
-                  controller.trip.value!.name,
+                title: Column(
+                  children: [
+                    Text(
+                      controller.trip.value!.name,
+                    ),
+                    const SizedBox(
+                      height: 4,
+                    ),
+                    Text(
+                      AppUtils.getCountDownTime(
+                        controller.trip.value!.startDate,
+                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 14),
+                    )
+                  ],
                 ),
                 automaticallyImplyLeading: false,
                 leading: GestureDetector(

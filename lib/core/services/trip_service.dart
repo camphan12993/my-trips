@@ -31,6 +31,7 @@ class TripService {
     for (var e in result.docs) {
       batch.delete(e.reference);
     }
+    batch.commit();
   }
 
   Future<Trip?> getTripById({required String id}) async {

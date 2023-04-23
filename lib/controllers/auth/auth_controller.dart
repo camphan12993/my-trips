@@ -65,8 +65,8 @@ class AuthController extends GetxController {
     try {
       EasyLoading.show(maskType: EasyLoadingMaskType.black);
       user = await _authService.createUsernameAccount(
-        name: username,
-        username: name,
+        name: name,
+        username: username,
       );
       Storage.user = user;
       EasyLoading.dismiss();

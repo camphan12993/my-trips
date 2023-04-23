@@ -1,5 +1,6 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:my_trips_app/core/app_colors.dart';
@@ -7,6 +8,7 @@ import 'package:my_trips_app/core/app_utils.dart';
 import 'package:my_trips_app/models/plan_node.dart';
 import 'package:my_trips_app/models/trip_node.dart';
 import 'package:my_trips_app/screens/trips/widgets/expense_item.dart';
+import 'package:my_trips_app/widgets/app_slidable.dart';
 
 import '../../../controllers/trips/trip_detail_controller.dart';
 import '../../../dialogs/add_plan_node.dart';
@@ -58,11 +60,14 @@ class TripDayPlan extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Thêm',
+                      'Thêm ngày',
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w400,
                       ),
+                    ),
+                    const SizedBox(
+                      width: 4,
                     ),
                     Icon(
                       Icons.add,
@@ -73,66 +78,76 @@ class TripDayPlan extends StatelessWidget {
                 ),
               )),
         ),
-        ..._controller.tripNodes
-            .asMap()
-            .entries
-            .map((e) => GestureDetector(
-                  onTap: () {
-                    _controller.selectedDay.value = e.key;
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                    decoration: BoxDecoration(
-                        color: _controller.selectedDay.value == e.key ? AppColors.primary.withOpacity(0.1) : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: _controller.selectedDay.value == e.key ? AppColors.primary : Colors.transparent)),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Ngày',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: _controller.currentDay.value == e.key ? AppColors.primary : AppColors.textPrimary,
+        if (_controller.tripNodes.isNotEmpty)
+          ..._controller.tripNodes
+              .asMap()
+              .entries
+              .map((e) => GestureDetector(
+                    onTap: () {
+                      _controller.selectedDay.value = e.key;
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                      decoration: BoxDecoration(
+                          color: _controller.selectedDay.value == e.key ? AppColors.primary.withOpacity(0.1) : Colors.grey[200],
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: _controller.selectedDay.value == e.key ? AppColors.primary : Colors.transparent)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Ngày',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: _controller.currentDay.value == e.key || _controller.selectedDay.value == e.key ? AppColors.primary : AppColors.textPrimary,
+                            ),
                           ),
-                        ),
-                        const SizedBox(
-                          width: 4,
-                        ),
-                        Text(
-                          '${e.key + 1}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: _controller.currentDay.value == e.key ? AppColors.primary : AppColors.textPrimary,
+                          const SizedBox(
+                            width: 4,
                           ),
-                        )
-                      ],
+                          Text(
+                            '${e.key + 1}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: _controller.currentDay.value == e.key || _controller.selectedDay.value == e.key ? AppColors.primary : AppColors.textPrimary,
+                            ),
+                          )
+                        ],
+                      ),
                     ),
-                  ),
-                ))
-            .toList()
+                  ))
+              .toList()
       ],
     );
   }
 
-  Widget buildTimeLine(BuildContext context) {
-    return _controller.currentNode.plans.isNotEmpty
-        ? Column(
-            children: _controller.currentNode.plans
-                .asMap()
-                .entries
-                .map(
-                  (e) => buildPlanNode(e.value, e.key == 2, context, e.key == _controller.currentNode.plans.length - 1),
-                )
-                .toList(),
+  Widget buildTimeLine(List<PlanNode> plans, BuildContext context) {
+    return plans.isNotEmpty
+        ? SlidableAutoCloseBehavior(
+            child: Column(
+              children: plans
+                  .asMap()
+                  .entries
+                  .map(
+                    (e) => buildPlanNode(e.value, context, e.key == plans.length - 1),
+                  )
+                  .toList(),
+            ),
           )
         : const DataPlaceholder(
             text: 'Chưa có địa điểm',
           );
   }
 
-  Widget buildPlanNode(PlanNode plan, bool isCurrent, BuildContext context, [bool isLast = false]) {
+  Widget buildPlanNode(PlanNode plan, BuildContext context, [bool isLast = false]) {
+    bool hasVisited = false;
+    if (_controller.trip.value!.hasEnd || _controller.currentDay.value > _controller.selectedDay.value) {
+      hasVisited = true;
+    } else if (_controller.currentDay.value == _controller.selectedDay.value) {
+      TimeOfDay now = TimeOfDay.now();
+      hasVisited = plan.time <= (now.hour * 60 + now.minute);
+    }
     return Column(
       children: [
         IntrinsicHeight(
@@ -144,7 +159,7 @@ class TripDayPlan extends StatelessWidget {
                 height: 12,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: isCurrent ? AppColors.primary : Colors.grey[400]!, width: 2),
+                  border: Border.all(color: hasVisited ? AppColors.primary : Colors.grey[400]!, width: 2),
                 ),
               ),
               const SizedBox(
@@ -155,7 +170,7 @@ class TripDayPlan extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: isCurrent ? AppColors.primary : AppColors.textPrimary,
+                  color: hasVisited ? AppColors.primary : AppColors.textPrimary,
                 ),
               )
             ],
@@ -170,7 +185,7 @@ class TripDayPlan extends StatelessWidget {
                 child: Center(
                   child: Container(
                     width: 1,
-                    color: isCurrent ? AppColors.primary : Colors.grey[400]!,
+                    color: hasVisited ? AppColors.primary : Colors.grey[400]!,
                   ),
                 ),
               ),
@@ -180,57 +195,70 @@ class TripDayPlan extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(top: 6, bottom: isLast ? 0 : 10),
-                  child: DecoratedBox(
-                    decoration: const BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.1), spreadRadius: -4, blurRadius: 18, offset: Offset(0, -2)),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border(right: BorderSide(color: isCurrent ? AppColors.primary : Colors.grey[400]!, width: 4)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              plan.name,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
+                  child: AppSlidable(
+                    onDelete: () {
+                      Get.dialog(
+                        AlertDialog(
+                          title: const Text(
+                            'Xoá địa điểm này?',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          actionsAlignment: MainAxisAlignment.center,
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () async {
+                                TripNode currentDay = _controller.tripNodes[_controller.selectedDay.value];
+                                await _controller.deletePlanNode(currentDay.id, plan.id);
+                                Get.back();
+                              },
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                              child: const Text('Xoá'),
                             )
                           ],
+                        ),
+                      );
+                    },
+                    onEdit: () {
+                      TripNode currentDay = _controller.tripNodes[_controller.selectedDay.value];
+                      Get.dialog(
+                        AddPlanNodeDialog(
+                          nodeId: currentDay.id,
+                          plan: plan,
+                        ),
+                      );
+                    },
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.1), spreadRadius: -4, blurRadius: 18, offset: Offset(0, -2)),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border(right: BorderSide(color: hasVisited ? AppColors.primary : Colors.grey[400]!, width: 4)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                plan.name,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-              if (_controller.isEditPlace.value)
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 6, top: 8),
-                    child: GestureDetector(
-                      onTap: () => Get.dialog(
-                        AddPlanNodeDialog(
-                          nodeId: _controller.currentNode.id,
-                          plan: plan,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.edit,
-                        color: AppColors.primary,
-                        size: 18,
-                      ),
-                    ),
-                  ),
-                )
             ],
           ),
         )
@@ -238,150 +266,166 @@ class TripDayPlan extends StatelessWidget {
     );
   }
 
-  Widget buildExpense() {
+  Widget buildExpense(BuildContext context) {
     TripNode currentDay = _controller.tripNodes[_controller.selectedDay.value];
 
-    return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(6)),
-        child: currentDay.expenses.isNotEmpty
-            ? Column(
-                children: [
-                  ...currentDay.expenses
-                      .map(
-                        (ep) => ExpenseItem(
-                          data: ep,
-                          memberName: _controller.memberName(ep.userId),
-                          formatCurrency: _controller.formatCurrency,
+    return SlidableAutoCloseBehavior(
+      child: Column(
+        children: [
+          if (currentDay.expenses.isNotEmpty)
+            ...currentDay.expenses
+                .map(
+                  (ep) => AppSlidable(
+                    key: ValueKey(ep.id),
+                    onDelete: () {
+                      Get.dialog(
+                        AlertDialog(
+                          title: const Text(
+                            'Xoá chi tiêu này?',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          actionsAlignment: MainAxisAlignment.center,
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () async {
+                                TripNode currentDay = _controller.tripNodes[_controller.selectedDay.value];
+                                await _controller.deleteExpend(currentDay.id, ep.id);
+                                Get.back();
+                              },
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                              child: const Text('Xoá'),
+                            )
+                          ],
                         ),
-                      )
-                      .toList(),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Tổng',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                      );
+                    },
+                    onEdit: () {
+                      TripNode currentDay = _controller.tripNodes[_controller.selectedDay.value];
+                      Get.dialog(
+                        AddSpendDialog(
+                          expense: ep,
+                          nodeId: currentDay.id,
                         ),
-                        Text(
-                          formatCurrency.format(_controller.getTotalInNode(currentDay.expenses)),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        )
-                      ],
+                      );
+                    },
+                    child: ExpenseItem(
+                      data: ep,
+                      memberName: _controller.memberName(ep.userId),
+                      formatCurrency: _controller.formatCurrency,
                     ),
+                  ),
+                )
+                .toList()
+          else
+            const DataPlaceholder(
+              text: 'Chưa có chi tiêu',
+            ),
+          if (currentDay.expenses.isNotEmpty) ...[
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Tổng',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    formatCurrency.format(_controller.getTotalInNode(currentDay.expenses)),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   )
                 ],
-              )
-            : const DataPlaceholder(
-                text: 'Chưa có chi tiêu',
-              ));
+              ),
+            )
+          ]
+        ],
+      ),
+    );
+  }
+
+  buildTripDetailBody(BuildContext context) {
+    TripNode currentDay = _controller.tripNodes[_controller.selectedDay.value];
+
+    return Expanded(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    'Địa điểm',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.primary),
+                  ),
+                ),
+                AppIconButton(
+                  Icon(
+                    Icons.add,
+                    color: AppColors.primary,
+                  ),
+                  onTap: () => Get.dialog(
+                    AddPlanNodeDialog(nodeId: _controller.tripNodes[_controller.selectedDay.value].id),
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            buildTimeLine(currentDay.plans, context),
+            const SizedBox(
+              height: 24,
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Chi tiêu',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  width: 6,
+                ),
+                AppIconButton(
+                  Icon(
+                    Icons.add,
+                    color: AppColors.primary,
+                  ),
+                  onTap: () => Get.dialog(
+                    AddSpendDialog(nodeId: currentDay.id),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            buildExpense(context)
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           buildListDay(),
           const SizedBox(
             height: 16,
           ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Địa điểm',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.primary),
-                        ),
-                      ),
-                      if (!_controller.isEditPlace.value) ...[
-                        AppIconButton(
-                          Icon(
-                            Icons.edit,
-                            size: 18,
-                            color: AppColors.primary,
-                          ),
-                          onTap: () => _controller.isEditPlace.value = true,
-                        ),
-                        const SizedBox(
-                          width: 6,
-                        ),
-                        AppIconButton(
-                          Icon(
-                            Icons.add,
-                            color: AppColors.primary,
-                          ),
-                          onTap: () => Get.dialog(
-                            AddPlanNodeDialog(nodeId: _controller.currentNode.id),
-                          ),
-                        )
-                      ] else
-                        AppIconButton(
-                          Icon(
-                            Icons.close,
-                            size: 18,
-                            color: AppColors.textPrimary,
-                          ),
-                          onTap: () => _controller.isEditPlace.value = false,
-                        )
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  buildTimeLine(context),
-                  const SizedBox(
-                    height: 24,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Chi tiêu',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.primary),
-                        ),
-                      ),
-                      AppIconButton(
-                        Icon(
-                          Icons.edit,
-                          size: 18,
-                          color: AppColors.primary,
-                        ),
-                        onTap: () => Get.dialog(
-                          AddSpendDialog(nodeId: _controller.currentNode.id),
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 6,
-                      ),
-                      AppIconButton(
-                        Icon(
-                          Icons.add,
-                          color: AppColors.primary,
-                        ),
-                        onTap: () => Get.dialog(
-                          AddSpendDialog(nodeId: _controller.currentNode.id),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  buildExpense()
-                ],
-              ),
-            ),
-          ),
+          if (_controller.tripNodes.isNotEmpty) buildTripDetailBody(context) else const DataPlaceholder(text: 'Chưa có lịch trình'),
         ],
       );
     });
